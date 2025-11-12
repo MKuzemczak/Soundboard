@@ -25,6 +25,8 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:sounboard/database/db.dart';
+import 'package:sounboard/database/sound_details.dart';
 
 /*
 
@@ -64,6 +66,24 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   Future<Uint8List> _getAssetData(String path) async {
     var asset = await rootBundle.load(path);
     return asset.buffer.asUint8List();
+  }
+
+  Future<void> loadFromDb() async {
+    final exercises = await DbHelper().getSounds();
+
+    if (exercises.isNotEmpty) {
+      uri1 = exercises[0].path;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$uri1 set!')),
+      );
+    }
+    else {
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Path not set!')),
+      );
+    }
   }
 
   @override
@@ -114,10 +134,11 @@ class _MultiPlaybackState extends State<MultiPlayback> {
       });
     });
     await _addListener1();
+    await loadFromDb();
     await _mPlayer1!.startPlayer(
         // fromDataBuffer: buffer1,
         fromURI: uri1,
-        codec: Codec.aacADTS,
+        codec: Codec.mp3,
         whenFinished: () {
           stopPlayer1();
           setState(() {});
@@ -360,12 +381,27 @@ class _MultiPlaybackState extends State<MultiPlayback> {
               if (result != null) {
                 print(result.files.single.path!);
                 uri1 = result.files.single.path!;
+                String s = "$uri1 picked";
+                DbHelper().insertExercise(SoundDetails(name: uri1!.split("\\").last, path: uri1!));
+                s = "$s and inserted!";
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(s)),
+                );
               } else {
-                // User canceled the picker
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Not picked")),
+                );
               }
 
             },
-            child: Text("Pick file"))
+            child: Text("Pick file")
+          ),
+          ElevatedButton(
+            onPressed: () async {
+                DbHelper().deleteDb();
+            },
+            child: Text("Delete database")
+          ),
         ],
       );
     }
