@@ -19,6 +19,7 @@
 
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:flutter/material.dart';
@@ -52,6 +53,7 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   FlutterSoundPlayer? _mPlayer2 = FlutterSoundPlayer();
   bool _mPlayer1IsInited = false;
   bool _mPlayer2IsInited = false;
+  String? uri1;
   Uint8List? buffer1;
   Uint8List? buffer2;
   String _playerTxt1 = '';
@@ -113,7 +115,8 @@ class _MultiPlaybackState extends State<MultiPlayback> {
     });
     await _addListener1();
     await _mPlayer1!.startPlayer(
-        fromDataBuffer: buffer1,
+        // fromDataBuffer: buffer1,
+        fromURI: uri1,
         codec: Codec.aacADTS,
         whenFinished: () {
           stopPlayer1();
@@ -216,9 +219,9 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   }
 
   Fn? getPlaybackFn1() {
-    if (buffer1 == null) { //!_mPlayer1IsInited || 
-      return null;
-    }
+    // if (buffer1 == null) { //!_mPlayer1IsInited || 
+    //   return null;
+    // }
     return _mPlayer1!.isStopped
         ? play1
         : () {
@@ -227,7 +230,7 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   }
 
   Fn? getPauseResumeFn1() {
-    if (!_mPlayer1IsInited || _mPlayer1!.isStopped || buffer1 == null) {
+    if (!_mPlayer1IsInited || _mPlayer1!.isStopped) { // || buffer1 == null
       return null;
     }
     return _mPlayer1!.isPaused ? resume1 : pause1;
@@ -350,6 +353,19 @@ class _MultiPlaybackState extends State<MultiPlayback> {
               ),
             ]),
           ),
+          ElevatedButton(
+            onPressed: () async {
+              FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+              if (result != null) {
+                print(result.files.single.path!);
+                uri1 = result.files.single.path!;
+              } else {
+                // User canceled the picker
+              }
+
+            },
+            child: Text("Pick file"))
         ],
       );
     }
