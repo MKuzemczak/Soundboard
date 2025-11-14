@@ -263,6 +263,18 @@ class DbHelper {
 
     return List.generate(soundContainersMaps.length, (i) => SoundContainerDetails.fromMap(soundContainersMaps[i]));
   }
+
+  Future<List<SoundboardDetails>> getSoundboards() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(soundboardsTableName);
+
+    return List.generate(
+      maps.length,
+      (i) => SoundboardDetails.fromMap(maps[i]),
+    );
+  }
+
+
   // Future <void> removeExercise(int exerciseId) async {
   //   final db = await database;
 

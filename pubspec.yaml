@@ -46,6 +46,7 @@ dependencies:
       path: sqflite_common_porter
     version: '>=0.2.0'
   path: ^1.9.1
+  flutter_slidable: ^4.0.0
 
 dev_dependencies:
   flutter_test:
