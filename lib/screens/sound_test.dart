@@ -69,10 +69,10 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   }
 
   Future<void> loadFromDb() async {
-    final exercises = await DbHelper().getSounds();
+    final sounds = await DbHelper().getSounds();
 
-    if (exercises.isNotEmpty) {
-      uri1 = exercises[0].path;
+    if (sounds.isNotEmpty) {
+      uri1 = sounds[0].path;
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$uri1 set!')),
@@ -382,7 +382,7 @@ class _MultiPlaybackState extends State<MultiPlayback> {
                 print(result.files.single.path!);
                 uri1 = result.files.single.path!;
                 String s = "$uri1 picked";
-                DbHelper().insertExercise(SoundDetails(name: uri1!.split("\\").last, path: uri1!));
+                DbHelper().insertSound(SoundDetails(name: uri1!.split("\\").last, path: uri1!));
                 s = "$s and inserted!";
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(s)),

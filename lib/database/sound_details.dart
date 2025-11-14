@@ -27,7 +27,7 @@ class SoundDetails {
 
   factory SoundDetails.fromMap(Map<String, dynamic> map) {
     return SoundDetails(
-      soundId: map['exerciseID'],
+      soundId: map['soundId'],
       name: map['name'],
       path: map['path'],
     );
