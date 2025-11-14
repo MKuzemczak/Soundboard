@@ -22,7 +22,7 @@ class SoundContainerDetails {
   }
 
   Map<String, Object?> toMap() {
-    final map = {"name": name, "shuffle": shuffle, "loop": loop};
+    final map = {"name": name, "shuffle": (shuffle ? "1" : "0"), "loop": (loop ? "1" : "0")};
     if (soundContainerId != null) {
       map["soundContainerId"] = soundContainerId.toString();
     }
@@ -33,8 +33,8 @@ class SoundContainerDetails {
     return SoundContainerDetails(
       soundContainerId: map["soundContainerId"],
       name: map["name"],
-      shuffle: map["shuffle"],
-      loop: map["loop"],
+      shuffle: map["shuffle"] == 1,
+      loop: map["loop"] == 1,
     );
   }
 

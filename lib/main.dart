@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sounboard/database/db.dart';
+import 'package:sounboard/database/soundboard_details.dart';
 import 'package:sounboard/screens/sound_test.dart';
 import 'package:sounboard/screens/soundboard_list_screen.dart';
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
+import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/soundboard_details.dart';
+import 'package:sounboard/screens/soundboard_view_screen.dart';
 import 'package:sounboard/utilities/soundboard_tile.dart';
 
 class SoundboardListScreen extends StatefulWidget {
@@ -28,6 +30,43 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
     return Scaffold(
       body: Column(
         children: [
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  final dbHelper = DbHelper(); 
+                  final sb = await dbHelper.insertSoundboard(
+                    SoundboardDetails(name: "DND"),
+                  );
+                  List<SoundContainerDetails> soundContainers = [];
+                  for (var i = 0; i < 13; i++) {
+                    final sc = await dbHelper.insertSoundContainer(
+                      SoundContainerDetails(
+                        name: "sc$i",
+                        shuffle: false,
+                        loop: true,
+                      ),
+                    );
+                    dbHelper.insertSoundboardToSoundContainerMapping(sb, sc);
+                    soundContainers.add(sc);
+                  }
+                  setState(() {
+                    _loadFutures();
+                  });
+                },
+                child: Text("Insert DB data"),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                    await DbHelper().deleteDb();
+                    setState(() {
+                      _loadFutures();
+                    });
+                },
+                child: Text("Delete database")
+              )
+            ],
+          ),
           Expanded(
             child: FutureBuilder(
               future: _soundboardsFuture,
@@ -51,11 +90,13 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
                       onEnterFunc: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) { return Column(); }//=> SoundboardViewScreen()
-                        )
+                          builder: (context) => SoundboardViewScreen(
+                            soundboardDetails: soundboardDetails,
+                          ),
+                        ),
                       ),
                       onRemoveFunc: (context) {
-                        throw Exception("NOT IMPLEMENTED");
+                        throw UnimplementedError();
                       },
                     );
                   },

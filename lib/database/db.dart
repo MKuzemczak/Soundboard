@@ -41,26 +41,34 @@ class DbHelper {
     // await deleteDatabase(path);
     return await openDatabase(
       path,
-      onCreate: (db, version) {
-        return db.execute(
-          "CREATE TABLE $soundsTableName ( "
+      onCreate: (db, version) async {
+        await db.execute(
+          "CREATE TABLE IF NOT EXISTS $soundsTableName ( "
           "    soundId INTEGER PRIMARY KEY AUTOINCREMENT,"
           "    name TEXT NOT NULL,"
-          "    path TEXT NOT NULL); "
-          "CREATE TABLE $soundContainersTableName ("
+          "    path TEXT NOT NULL);"
+        );
+        await db.execute(
+          "CREATE TABLE IF NOT EXISTS $soundContainersTableName ("
           "    soundContainerId INTEGER PRIMARY KEY AUTOINCREMENT,"
           "    name TEXT NOT NULL,"
           "    shuffle BIT NOT NULL,"
-          "    loop BIT NOT NULL); "
-          "CREATE TABLE $soundContainersToSoundsTableName ("
+          "    loop BIT NOT NULL);"
+        );
+        await db.execute(
+          "CREATE TABLE IF NOT EXISTS $soundContainersToSoundsTableName ("
           "    soundContainerId INTEGER NOT NULL,"
-          "    soundId INTEGER NOT NULL); "
-          "CREATE TABLE $soundboardsTableName ("
+          "    soundId INTEGER NOT NULL);"
+        );
+        await db.execute(
+          "CREATE TABLE IF NOT EXISTS $soundboardsTableName ("
           "    soundboardId INTEGER PRIMARY KEY AUTOINCREMENT,"
-          "    name TEXT NOT NULL); "
-          "CREATE TABLE $soundboardsToSoundContainersTableName ("
+          "    name TEXT NOT NULL);"
+        );
+        await db.execute(
+          "CREATE TABLE IF NOT EXISTS $soundboardsToSoundContainersTableName ("
           "    soundboardId INTEGER NOT NULL,"
-          "    soundContainerId INTEGER NOT NULL);",
+          "    soundContainerId INTEGER NOT NULL);"
         );
       },
       version: 1,
