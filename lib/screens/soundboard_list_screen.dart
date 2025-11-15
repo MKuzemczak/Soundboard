@@ -34,7 +34,7 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  final dbHelper = DbHelper(); 
+                  final dbHelper = DbHelper();
                   final sb = await dbHelper.insertSoundboard(
                     SoundboardDetails(name: "DND"),
                   );
@@ -58,13 +58,13 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                    await DbHelper().deleteDb();
-                    setState(() {
-                      _loadFutures();
-                    });
+                  await DbHelper().deleteDb();
+                  setState(() {
+                    _loadFutures();
+                  });
                 },
-                child: Text("Delete database")
-              )
+                child: Text("Delete database"),
+              ),
             ],
           ),
           Expanded(

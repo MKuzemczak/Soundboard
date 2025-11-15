@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:sounboard/database/sound_details.dart';
 
-class SoundTile extends StatelessWidget{
+class SoundTile extends StatelessWidget {
   final SoundDetails soundDetails;
   final VoidCallback onTapFunc;
   final Function(BuildContext) onRemoveFunc;
@@ -27,21 +27,25 @@ class SoundTile extends StatelessWidget{
                 SlidableAction(
                   onPressed: onRemoveFunc,
                   icon: Icons.delete,
-                  borderRadius: BorderRadius.circular(5.0)
-                )
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
               ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ElevatedButton(
-                  style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Color.fromRGBO(0, 0, 0, 1))),
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all<Color>(
+                      Color.fromRGBO(0, 0, 0, 1),
+                    ),
+                  ),
                   onPressed: onTapFunc,
-                  child: Text(soundDetails.name)
+                  child: Text(soundDetails.name),
                 ),
               ],
-            )
-          )
+            ),
+          ),
         ],
       ),
     );

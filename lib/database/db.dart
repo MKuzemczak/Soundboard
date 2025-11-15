@@ -146,7 +146,7 @@ class DbHelper {
     final List<Map<String, dynamic>> maps = await db.query(
       soundContainersToSoundsTableName,
       where: "soundContainerId = ? AND soundId = ?",
-      whereArgs: [soundContainerId, soundDetails.soundId!]
+      whereArgs: [soundContainerId, soundDetails.soundId!],
     );
 
     if (maps.isNotEmpty) {
@@ -316,63 +316,61 @@ class DbHelper {
     await db.delete(
       soundContainersToSoundsTableName,
       where: "soundContainerId = ? AND soundId = ?",
-      whereArgs: [soundContainerId, soundId]
+      whereArgs: [soundContainerId, soundId],
     );
 
-    final List<Map<String, dynamic>> maps = await db
-        .query(
-          soundContainersToSoundsTableName,
-          where: "soundId = ?",
-          whereArgs: [soundId],
+    final List<Map<String, dynamic>> maps = await db.query(
+      soundContainersToSoundsTableName,
+      where: "soundId = ?",
+      whereArgs: [soundId],
+    );
 
-        ); 
-    
     if (maps.isEmpty) {
       await db.delete(
         soundsTableName,
         where: "soundId = ?",
-        whereArgs: [soundId]
+        whereArgs: [soundId],
       );
     }
   }
 
   Future<void> unmapSoundContainerFromSoundboard({
     required int soundboardId,
-    required int soundContainerId
+    required int soundContainerId,
   }) async {
     final db = await database;
 
     await db.delete(
       soundboardsToSoundContainersTableName,
       where: "soundboardId = ? AND soundContainerId = ?",
-      whereArgs: [soundboardId, soundContainerId]
+      whereArgs: [soundboardId, soundContainerId],
     );
 
-    final List<Map<String, dynamic>> maps = await db
-        .query(
-          soundboardsToSoundContainersTableName,
-          where: "soundContainerId = ?",
-          whereArgs: [soundContainerId],
+    final List<Map<String, dynamic>> maps = await db.query(
+      soundboardsToSoundContainersTableName,
+      where: "soundContainerId = ?",
+      whereArgs: [soundContainerId],
+    );
 
-        ); 
-    
     if (maps.isEmpty) {
-      final List<Map<String, dynamic>> soundIdMaps = await db
-        .query(
-          soundContainersToSoundsTableName,
-          columns: ["soundId"],
-          where: "soundContainerId = ?",
-          whereArgs: [soundContainerId],
-        );
+      final List<Map<String, dynamic>> soundIdMaps = await db.query(
+        soundContainersToSoundsTableName,
+        columns: ["soundId"],
+        where: "soundContainerId = ?",
+        whereArgs: [soundContainerId],
+      );
 
       for (var map in soundIdMaps) {
-        await unmapSoundFromSoundContainer(soundContainerId: soundContainerId, soundId: map["soundId"]);
+        await unmapSoundFromSoundContainer(
+          soundContainerId: soundContainerId,
+          soundId: map["soundId"],
+        );
       }
 
       await db.delete(
         soundContainersTableName,
         where: "soundContainerId = ?",
-        whereArgs: [soundContainerId]
+        whereArgs: [soundContainerId],
       );
     }
   }

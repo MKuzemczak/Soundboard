@@ -4,7 +4,6 @@ class SoundContainerDetails {
   bool shuffle;
   bool loop;
 
-
   SoundContainerDetails({
     this.soundContainerId,
     required this.name,
@@ -17,12 +16,16 @@ class SoundContainerDetails {
       soundContainerId: soundContainerId,
       name: name,
       shuffle: shuffle,
-      loop: loop
+      loop: loop,
     );
   }
 
   Map<String, Object?> toMap() {
-    final map = {"name": name, "shuffle": (shuffle ? "1" : "0"), "loop": (loop ? "1" : "0")};
+    final map = {
+      "name": name,
+      "shuffle": (shuffle ? "1" : "0"),
+      "loop": (loop ? "1" : "0"),
+    };
     if (soundContainerId != null) {
       map["soundContainerId"] = soundContainerId.toString();
     }

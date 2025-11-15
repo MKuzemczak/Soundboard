@@ -2,16 +2,10 @@ class SoundboardDetails {
   int? soundboardId;
   String name;
 
-  SoundboardDetails({
-    this.soundboardId,
-    required this.name,
-  });
+  SoundboardDetails({this.soundboardId, required this.name});
 
   SoundboardDetails clone() {
-    return SoundboardDetails(
-      soundboardId: soundboardId,
-      name: name,
-    );
+    return SoundboardDetails(soundboardId: soundboardId, name: name);
   }
 
   Map<String, Object?> toMap() {

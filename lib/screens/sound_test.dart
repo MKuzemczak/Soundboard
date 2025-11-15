@@ -73,16 +73,14 @@ class _MultiPlaybackState extends State<MultiPlayback> {
 
     if (sounds.isNotEmpty) {
       uri1 = sounds[0].path;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$uri1 set!')),
-      );
-    }
-    else {
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Path not set!')),
-      );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$uri1 set!')));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Path not set!')));
     }
   }
 
@@ -90,16 +88,16 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   void initState() {
     super.initState();
     initializeDateFormatting();
-    _getAssetData(
-      'assets/sound/mia.mp3',
-    ).then((value) => setState(() {
-          buffer1 = value;
-        }));
-    _getAssetData(
-      'assets/sound/02. Roar of the Abyss.mp3',
-    ).then((value) => setState(() {
-          buffer2 = value;
-        }));
+    _getAssetData('assets/sound/mia.mp3').then(
+      (value) => setState(() {
+        buffer1 = value;
+      }),
+    );
+    _getAssetData('assets/sound/02. Roar of the Abyss.mp3').then(
+      (value) => setState(() {
+        buffer2 = value;
+      }),
+    );
 
     // _mPlayer1!.openPlayer().then((value) {
     //   setState(() {
@@ -125,7 +123,7 @@ class _MultiPlaybackState extends State<MultiPlayback> {
 
     super.dispose();
   }
-// -------------------------  Player1 play an AAC file -----------------------
+  // -------------------------  Player1 play an AAC file -----------------------
 
   void play1() async {
     _mPlayer1!.openPlayer().then((value) {
@@ -136,13 +134,14 @@ class _MultiPlaybackState extends State<MultiPlayback> {
     await _addListener1();
     await loadFromDb();
     await _mPlayer1!.startPlayer(
-        // fromDataBuffer: buffer1,
-        fromURI: uri1,
-        codec: Codec.mp3,
-        whenFinished: () {
-          stopPlayer1();
-          setState(() {});
-        });
+      // fromDataBuffer: buffer1,
+      fromURI: uri1,
+      codec: Codec.mp3,
+      whenFinished: () {
+        stopPlayer1();
+        setState(() {});
+      },
+    );
     setState(() {});
   }
 
@@ -185,12 +184,13 @@ class _MultiPlaybackState extends State<MultiPlayback> {
     });
     await _addListener2();
     await _mPlayer2!.startPlayer(
-        fromDataBuffer: buffer2,
-        codec: Codec.aacMP4,
-        whenFinished: () {
-          stopPlayer2();
-          setState(() {});
-        });
+      fromDataBuffer: buffer2,
+      codec: Codec.aacMP4,
+      whenFinished: () {
+        stopPlayer2();
+        setState(() {});
+      },
+    );
     setState(() {});
   }
 
@@ -228,19 +228,22 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   Future<void> _addListener1() async {
     cancelPlayerSubscriptions1();
     _playerSubscription1 = _mPlayer1!.onProgress!.listen((e) {
-      var date = DateTime.fromMillisecondsSinceEpoch(e.position.inMilliseconds,
-          isUtc: true);
+      var date = DateTime.fromMillisecondsSinceEpoch(
+        e.position.inMilliseconds,
+        isUtc: true,
+      );
       var txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
       setState(() {
         _playerTxt1 = txt.substring(0, 8);
       });
     });
     await _mPlayer1!.setSubscriptionDuration(
-        const Duration(milliseconds: 10)); // DON'T FORGET THIS CALL
+      const Duration(milliseconds: 10),
+    ); // DON'T FORGET THIS CALL
   }
 
   Fn? getPlaybackFn1() {
-    // if (buffer1 == null) { //!_mPlayer1IsInited || 
+    // if (buffer1 == null) { //!_mPlayer1IsInited ||
     //   return null;
     // }
     return _mPlayer1!.isStopped
@@ -251,7 +254,8 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   }
 
   Fn? getPauseResumeFn1() {
-    if (!_mPlayer1IsInited || _mPlayer1!.isStopped) { // || buffer1 == null
+    if (!_mPlayer1IsInited || _mPlayer1!.isStopped) {
+      // || buffer1 == null
       return null;
     }
     return _mPlayer1!.isPaused ? resume1 : pause1;
@@ -260,19 +264,23 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   Future<void> _addListener2() async {
     cancelPlayerSubscriptions3();
     _playerSubscription2 = _mPlayer2!.onProgress!.listen((e) {
-      var date = DateTime.fromMillisecondsSinceEpoch(e.position.inMilliseconds,
-          isUtc: true);
+      var date = DateTime.fromMillisecondsSinceEpoch(
+        e.position.inMilliseconds,
+        isUtc: true,
+      );
       var txt = DateFormat('mm:ss:SS', 'en_GB').format(date);
       setState(() {
         _playerTxt2 = txt.substring(0, 8);
       });
     });
     await _mPlayer2!.setSubscriptionDuration(
-        const Duration(milliseconds: 10)); // DON'T FORGET THIS CALL
+      const Duration(milliseconds: 10),
+    ); // DON'T FORGET THIS CALL
   }
 
   Fn? getPlaybackFn2() {
-    if (buffer2 == null) {//!_mPlayer2IsInited || 
+    if (buffer2 == null) {
+      //!_mPlayer2IsInited ||
       return null;
     }
     return _mPlayer2!.isStopped
@@ -302,37 +310,27 @@ class _MultiPlaybackState extends State<MultiPlayback> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: const Color(0xFFFAF0E6),
-              border: Border.all(
-                color: Colors.indigo,
-                width: 3,
-              ),
+              border: Border.all(color: Colors.indigo, width: 3),
             ),
-            child: Row(children: [
-              ElevatedButton(
-                onPressed: getPlaybackFn1(),
-                //color: Colors.white,
-                //disabledColor: Colors.grey,
-                child: Text(_mPlayer1!.isStopped ? 'Play' : 'Stop'),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              ElevatedButton(
-                onPressed: getPauseResumeFn1(),
-                //color: Colors.white,
-                //disabledColor: Colors.grey,
-                child: Text(_mPlayer1!.isPaused ? 'Resume' : 'Pause'),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              Text(
-                _playerTxt1,
-                style: const TextStyle(
-                  color: Colors.black,
+            child: Row(
+              children: [
+                ElevatedButton(
+                  onPressed: getPlaybackFn1(),
+                  //color: Colors.white,
+                  //disabledColor: Colors.grey,
+                  child: Text(_mPlayer1!.isStopped ? 'Play' : 'Stop'),
                 ),
-              ),
-            ]),
+                const SizedBox(width: 20),
+                ElevatedButton(
+                  onPressed: getPauseResumeFn1(),
+                  //color: Colors.white,
+                  //disabledColor: Colors.grey,
+                  child: Text(_mPlayer1!.isPaused ? 'Resume' : 'Pause'),
+                ),
+                const SizedBox(width: 20),
+                Text(_playerTxt1, style: const TextStyle(color: Colors.black)),
+              ],
+            ),
           ),
           Container(
             margin: const EdgeInsets.all(3),
@@ -342,37 +340,27 @@ class _MultiPlaybackState extends State<MultiPlayback> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: const Color(0xFFFAF0E6),
-              border: Border.all(
-                color: Colors.indigo,
-                width: 3,
-              ),
+              border: Border.all(color: Colors.indigo, width: 3),
             ),
-            child: Row(children: [
-              ElevatedButton(
-                onPressed: getPlaybackFn2(),
-                //color: Colors.white,
-                //disabledColor: Colors.grey,
-                child: Text(_mPlayer2!.isStopped ? 'Play' : 'Stop'),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              ElevatedButton(
-                onPressed: getPauseResumeFn2(),
-                //color: Colors.white,
-                //disabledColor: Colors.grey,
-                child: Text(_mPlayer2!.isPaused ? 'Resume' : 'Pause'),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              Text(
-                _playerTxt2,
-                style: const TextStyle(
-                  color: Colors.black,
+            child: Row(
+              children: [
+                ElevatedButton(
+                  onPressed: getPlaybackFn2(),
+                  //color: Colors.white,
+                  //disabledColor: Colors.grey,
+                  child: Text(_mPlayer2!.isStopped ? 'Play' : 'Stop'),
                 ),
-              ),
-            ]),
+                const SizedBox(width: 20),
+                ElevatedButton(
+                  onPressed: getPauseResumeFn2(),
+                  //color: Colors.white,
+                  //disabledColor: Colors.grey,
+                  child: Text(_mPlayer2!.isPaused ? 'Resume' : 'Pause'),
+                ),
+                const SizedBox(width: 20),
+                Text(_playerTxt2, style: const TextStyle(color: Colors.black)),
+              ],
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -382,25 +370,26 @@ class _MultiPlaybackState extends State<MultiPlayback> {
                 print(result.files.single.path!);
                 uri1 = result.files.single.path!;
                 String s = "$uri1 picked";
-                DbHelper().insertSound(SoundDetails(name: uri1!.split("\\").last, path: uri1!));
+                DbHelper().insertSound(
+                  SoundDetails(name: uri1!.split("\\").last, path: uri1!),
+                );
                 s = "$s and inserted!";
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(s)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(s)));
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Not picked")),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text("Not picked")));
               }
-
             },
-            child: Text("Pick file")
+            child: Text("Pick file"),
           ),
           ElevatedButton(
             onPressed: () async {
-                DbHelper().deleteDb();
+              DbHelper().deleteDb();
             },
-            child: Text("Delete database")
+            child: Text("Delete database"),
           ),
         ],
       );
@@ -408,9 +397,7 @@ class _MultiPlaybackState extends State<MultiPlayback> {
 
     return Scaffold(
       backgroundColor: Colors.blue,
-      appBar: AppBar(
-        title: const Text('Multi Playback'),
-      ),
+      appBar: AppBar(title: const Text('Multi Playback')),
       body: makeBody(),
     );
   }

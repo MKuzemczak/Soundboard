@@ -3,18 +3,10 @@ class SoundDetails {
   String name;
   String path;
 
-  SoundDetails({
-    this.soundId,
-    required this.name,
-    required this.path,
-  });
+  SoundDetails({this.soundId, required this.name, required this.path});
 
   SoundDetails clone() {
-    return SoundDetails(
-      soundId: soundId,
-      name: name,
-      path: path,
-    );
+    return SoundDetails(soundId: soundId, name: name, path: path);
   }
 
   Map<String, Object?> toMap() {

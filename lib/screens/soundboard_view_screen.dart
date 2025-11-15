@@ -65,14 +65,27 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                     children: List.generate(
                       soundContainers.length,
                       (i) => ElevatedButton(
-                        style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Color.fromRGBO(0, 0, 0, 1))),
-                        onLongPress: () => _showSoundContainerLongPressDialog(soundContainers[i]),
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                            Color.fromRGBO(0, 0, 0, 1),
+                          ),
+                        ),
+                        onLongPress: () => _showSoundContainerLongPressDialog(
+                          soundContainers[i],
+                        ),
                         onPressed: () async {
                           final dbHelper = DbHelper();
-                          final soundDetails = await dbHelper.getSounds(soundContainerId: soundContainers[i].soundContainerId!);
-                          
+                          final soundDetails = await dbHelper.getSounds(
+                            soundContainerId:
+                                soundContainers[i].soundContainerId!,
+                          );
+
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("${List.generate(soundDetails.length, (i) => soundDetails[i].name)}")),
+                            SnackBar(
+                              content: Text(
+                                "${List.generate(soundDetails.length, (i) => soundDetails[i].name)}",
+                              ),
+                            ),
                           );
                         },
                         child: Text(soundContainers[i].name),
@@ -88,7 +101,9 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
     );
   }
 
-  Future<void> _deleteSoundCountainer(SoundContainerDetails soundContainerDetails) async {
+  Future<void> _deleteSoundCountainer(
+    SoundContainerDetails soundContainerDetails,
+  ) async {
     await DbHelper().unmapSoundContainerFromSoundboard(
       soundboardId: widget.soundboardDetails.soundboardId!,
       soundContainerId: soundContainerDetails.soundContainerId!,
@@ -98,11 +113,15 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
     });
   }
 
-  void _showSoundContainerLongPressDialog(SoundContainerDetails soundContainerDetails) {
+  void _showSoundContainerLongPressDialog(
+    SoundContainerDetails soundContainerDetails,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        content: Text('What do you want to do with ${soundContainerDetails.name}?'),
+        content: Text(
+          'What do you want to do with ${soundContainerDetails.name}?',
+        ),
         actions: <Widget>[
           TextButton(
             child: const Text('Delete'),
@@ -121,8 +140,8 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                   builder: (context) => SoundContainerScreen(
                     soundContainerId: soundContainerDetails.soundContainerId!,
                     onEdit: () => setState(() {
-                        _loadFutures();
-                      }),
+                      _loadFutures();
+                    }),
                   ),
                 ),
               );
@@ -133,7 +152,9 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
     );
   }
 
-  void _showSoundContainerDeleteDialog(SoundContainerDetails soundContainerDetails) {
+  void _showSoundContainerDeleteDialog(
+    SoundContainerDetails soundContainerDetails,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
