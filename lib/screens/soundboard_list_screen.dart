@@ -47,7 +47,10 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
                         loop: true,
                       ),
                     );
-                    dbHelper.insertSoundboardToSoundContainerMapping(sb, sc);
+                    await dbHelper.insertSoundboardToSoundContainerMapping(
+                      soundboardId: sb.soundboardId!,
+                      soundContainerId: sc.soundContainerId!
+                    );
                     soundContainers.add(sc);
                   }
                   setState(() {

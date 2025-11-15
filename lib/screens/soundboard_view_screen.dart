@@ -5,6 +5,7 @@ import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/sound_details.dart';
 import 'package:sounboard/database/soundboard_details.dart';
 import 'package:sounboard/screens/sound_container_screen.dart';
+import 'package:sounboard/utilities/add_sound_container_dialog_box.dart';
 import 'package:stretch_wrap/stretch_wrap.dart';
 
 class SoundboardViewScreen extends StatefulWidget {
@@ -98,6 +99,30 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _addSoundContainer(),
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _addSoundContainer() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AddSoundContainerDialogBox(
+          soundboardId: widget.soundboardDetails.soundboardId!,
+          onSave: () {
+            Navigator.pop(context);
+            setState(() {
+              _loadFutures();
+            });
+          },
+          onCancel: () => Navigator.pop(context),
+          initialShuffleSwitchState: true,
+          initialLoopSwitchState: true,
+        );
+      },
     );
   }
 

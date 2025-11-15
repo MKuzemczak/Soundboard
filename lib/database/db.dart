@@ -159,18 +159,14 @@ class DbHelper {
     });
   }
 
-  Future<void> insertSoundboardToSoundContainerMapping(
-    SoundboardDetails soundboardDetails,
-    SoundContainerDetails soundContainerDetails,
-  ) async {
-    if (soundContainerDetails.soundContainerId == null ||
-        soundboardDetails.soundboardId == null) {
-      return;
-    }
+  Future<void> insertSoundboardToSoundContainerMapping({
+    required int soundboardId,
+    required int soundContainerId,
+  }) async {
     final db = await database;
     await db.insert(soundboardsToSoundContainersTableName, {
-      "soundboardId": soundboardDetails.soundboardId!,
-      "soundContainerId": soundContainerDetails.soundContainerId!,
+      "soundboardId": soundboardId,
+      "soundContainerId": soundContainerId,
     });
   }
 
