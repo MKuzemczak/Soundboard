@@ -46,29 +46,29 @@ class DbHelper {
           "CREATE TABLE IF NOT EXISTS $soundsTableName ( "
           "    soundId INTEGER PRIMARY KEY AUTOINCREMENT,"
           "    name TEXT NOT NULL,"
-          "    path TEXT NOT NULL);"
+          "    path TEXT NOT NULL);",
         );
         await db.execute(
           "CREATE TABLE IF NOT EXISTS $soundContainersTableName ("
           "    soundContainerId INTEGER PRIMARY KEY AUTOINCREMENT,"
           "    name TEXT NOT NULL,"
           "    shuffle BIT NOT NULL,"
-          "    loop BIT NOT NULL);"
+          "    loop BIT NOT NULL);",
         );
         await db.execute(
           "CREATE TABLE IF NOT EXISTS $soundContainersToSoundsTableName ("
           "    soundContainerId INTEGER NOT NULL,"
-          "    soundId INTEGER NOT NULL);"
+          "    soundId INTEGER NOT NULL);",
         );
         await db.execute(
           "CREATE TABLE IF NOT EXISTS $soundboardsTableName ("
           "    soundboardId INTEGER PRIMARY KEY AUTOINCREMENT,"
-          "    name TEXT NOT NULL);"
+          "    name TEXT NOT NULL);",
         );
         await db.execute(
           "CREATE TABLE IF NOT EXISTS $soundboardsToSoundContainersTableName ("
           "    soundboardId INTEGER NOT NULL,"
-          "    soundContainerId INTEGER NOT NULL);"
+          "    soundContainerId INTEGER NOT NULL);",
         );
       },
       version: 1,
@@ -152,6 +152,139 @@ class DbHelper {
     });
   }
 
+  Future<SoundDetails?> getSound(int soundId) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      soundsTableName,
+      where: "soundId = ?",
+      whereArgs: [soundId],
+    );
+
+    if (maps.isEmpty) {
+      return null;
+    }
+
+    return SoundDetails.fromMap(maps[0]);
+  }
+
+  Future<List<SoundDetails>> getSounds({int? soundContainerId}) async {
+    final db = await database;
+
+    if (soundContainerId == null) {
+      final List<Map<String, dynamic>> maps = await db.query(soundsTableName);
+
+      return List.generate(maps.length, (i) => SoundDetails.fromMap(maps[i]));
+    }
+
+    final List<Map<String, dynamic>> soundContainerToSoundIdsMaps = await db
+        .query(
+          soundContainersToSoundsTableName,
+          where: "soundContainerId = ?",
+          whereArgs: [soundContainerId!],
+        );
+
+    final List<int> soundIds = List.generate(
+      soundContainerToSoundIdsMaps.length,
+      (i) => soundContainerToSoundIdsMaps[i]["soundId"],
+    );
+
+    final List<Map<String, dynamic>> soundsMaps = await db.query(
+      soundsTableName,
+      where: "soundId IN (${List.filled(soundIds.length, '?').join(',')})",
+      whereArgs: soundIds,
+    );
+
+    return List.generate(
+      soundsMaps.length,
+      (i) => SoundDetails.fromMap(soundsMaps[i]),
+    );
+  }
+
+  Future<SoundContainerDetails?> getSoundContainer(int soundContainerId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      soundContainersTableName,
+      where: "soundContainerId = ?",
+      whereArgs: [soundContainerId],
+    );
+
+    if (maps.isEmpty) {
+      return null;
+    }
+
+    return SoundContainerDetails.fromMap(maps[0]);
+  }
+
+  Future<List<SoundContainerDetails>> getSoundContainers({
+    SoundboardDetails? soundboardDetails,
+  }) async {
+    final db = await database;
+
+    if (soundboardDetails == null || soundboardDetails.soundboardId == null) {
+      final List<Map<String, dynamic>> maps = await db.query(
+        soundContainersTableName,
+      );
+
+      return List.generate(
+        maps.length,
+        (i) => SoundContainerDetails.fromMap(maps[i]),
+      );
+    }
+
+    final List<Map<String, dynamic>> soundboardToSoundContainerIdsMaps =
+        await db.query(
+          soundboardsToSoundContainersTableName,
+          where: "soundboardId = ?",
+          whereArgs: [soundboardDetails.soundboardId!],
+        );
+
+    final List<int> soundContainerIds = List.generate(
+      soundboardToSoundContainerIdsMaps.length,
+      (i) => soundboardToSoundContainerIdsMaps[i]["soundContainerId"],
+    );
+
+    final List<Map<String, dynamic>> soundContainersMaps = await db.query(
+      soundContainersTableName,
+      where:
+          "soundContainerId IN (${List.filled(soundContainerIds.length, '?').join(',')})",
+      whereArgs: soundContainerIds,
+    );
+
+    return List.generate(
+      soundContainersMaps.length,
+      (i) => SoundContainerDetails.fromMap(soundContainersMaps[i]),
+    );
+  }
+
+  Future<List<SoundboardDetails>> getSoundboards() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      soundboardsTableName,
+    );
+
+    return List.generate(
+      maps.length,
+      (i) => SoundboardDetails.fromMap(maps[i]),
+    );
+  }
+
+  Future<void> updateSoundContainer(
+    SoundContainerDetails soundContainerDetails,
+  ) async {
+    if (soundContainerDetails.soundContainerId == null) {
+      return;
+    }
+
+    final db = await database;
+    await db.update(
+      soundContainersTableName,
+      soundContainerDetails.toMap(),
+      where: "soundContainerId = ?",
+      whereArgs: [soundContainerDetails.soundContainerId!]
+    );
+  }
+
   // Future<bool> updateExercise(SoundDetails exercise) async {
   //   final db = await database;
 
@@ -181,107 +314,6 @@ class DbHelper {
 
   //   return exerciseChanged;
   // }
-
-  Future<SoundDetails?> getSound(int soundId) async {
-    final db = await database;
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      soundsTableName,
-      where: "soundId = ?",
-      whereArgs: [soundId],
-    );
-
-    if (maps.isEmpty) {
-      return null;
-    }
-
-    return SoundDetails.fromMap(maps[0]);
-  }
-
-  Future<List<SoundDetails>> getSounds(
-    {SoundContainerDetails? soundContainerDetails,}
-  ) async {
-    final db = await database;
-
-    if (soundContainerDetails == null ||
-        soundContainerDetails.soundContainerId == null) {
-      final List<Map<String, dynamic>> maps = await db.query(soundsTableName);
-
-      return List.generate(
-        maps.length,
-        (i) => SoundDetails.fromMap(maps[i]),
-      );
-    }
-
-    final List<Map<String, dynamic>> soundContainerToSoundIdsMaps = await db
-        .query(
-          soundContainersToSoundsTableName,
-          where: "soundContainerId = ?",
-          whereArgs: [soundContainerDetails.soundContainerId!],
-        );
-
-    final List<int> soundIds = List.generate(
-      soundContainerToSoundIdsMaps.length,
-      (i) => soundContainerToSoundIdsMaps[i]["soundId"],
-    );
-
-    final List<Map<String, dynamic>> soundsMaps = await db
-        .query(
-          soundsTableName,
-          where: "soundId IN (${List.filled(soundIds.length, '?').join(',')})",
-          whereArgs: soundIds
-        );
-
-    return List.generate(soundsMaps.length, (i) => SoundDetails.fromMap(soundsMaps[i]));
-  }
-
-  Future<List<SoundContainerDetails>> getSoundContainers(
-    {SoundboardDetails? soundboardDetails,}
-  ) async {
-    final db = await database;
-
-    if (soundboardDetails == null ||
-        soundboardDetails.soundboardId == null) {
-      final List<Map<String, dynamic>> maps = await db.query(soundContainersTableName);
-
-      return List.generate(
-        maps.length,
-        (i) => SoundContainerDetails.fromMap(maps[i]),
-      );
-    }
-
-    final List<Map<String, dynamic>> soundboardToSoundContainerIdsMaps = await db
-        .query(
-          soundboardsToSoundContainersTableName,
-          where: "soundboardId = ?",
-          whereArgs: [soundboardDetails.soundboardId!],
-        );
-
-    final List<int> soundContainerIds = List.generate(
-      soundboardToSoundContainerIdsMaps.length,
-      (i) => soundboardToSoundContainerIdsMaps[i]["soundContainerId"],
-    );
-
-    final List<Map<String, dynamic>> soundContainersMaps = await db
-        .query(
-          soundContainersTableName,
-          where: "soundContainerId IN (${List.filled(soundContainerIds.length, '?').join(',')})",
-          whereArgs: soundContainerIds
-        );
-
-    return List.generate(soundContainersMaps.length, (i) => SoundContainerDetails.fromMap(soundContainersMaps[i]));
-  }
-
-  Future<List<SoundboardDetails>> getSoundboards() async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(soundboardsTableName);
-
-    return List.generate(
-      maps.length,
-      (i) => SoundboardDetails.fromMap(maps[i]),
-    );
-  }
-
 
   // Future <void> removeExercise(int exerciseId) async {
   //   final db = await database;

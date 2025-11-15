@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:sounboard/database/soundboard_details.dart';
+import 'package:sounboard/database/sound_details.dart';
 
-class SoundboardTile extends StatelessWidget {
-  final SoundboardDetails soundboardDetails;
-  final VoidCallback onEnterFunc;
-  final Function(BuildContext)? onRemoveFunc;
+class SoundTile extends StatelessWidget{
+  final SoundDetails soundDetails;
+  final VoidCallback onTapFunc;
+  final Function(BuildContext) onRemoveFunc;
 
-  const SoundboardTile({
+  const SoundTile({
     super.key,
-    required this.soundboardDetails,
-    required this.onEnterFunc,
+    required this.soundDetails,
+    required this.onTapFunc,
     required this.onRemoveFunc,
   });
 
@@ -36,8 +36,8 @@ class SoundboardTile extends StatelessWidget {
               children: [
                 ElevatedButton(
                   style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Color.fromRGBO(0, 0, 0, 1))),
-                  onPressed: onEnterFunc,
-                  child: Text(soundboardDetails.name)
+                  onPressed: onTapFunc,
+                  child: Text(soundDetails.name)
                 ),
               ],
             )

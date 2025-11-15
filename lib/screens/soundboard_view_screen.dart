@@ -4,6 +4,7 @@ import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/sound_details.dart';
 import 'package:sounboard/database/soundboard_details.dart';
+import 'package:sounboard/screens/sound_container_screen.dart';
 import 'package:stretch_wrap/stretch_wrap.dart';
 
 class SoundboardViewScreen extends StatefulWidget {
@@ -65,29 +66,42 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                       soundContainers.length,
                       (i) => ElevatedButton(
                         style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Color.fromRGBO(0, 0, 0, 1))),
-                        onLongPress: () async {
-                          FilePickerResult? result = await FilePicker.platform.pickFiles();
+                        // onLongPress: () async {
+                        //   FilePickerResult? result = await FilePicker.platform.pickFiles();
                   
-                          if (result != null) {
-                            print(result.files.single.path!);
-                            final uri1 = result.files.single.path!;
-                            String s = "$uri1 picked";
-                            final dbHelper = DbHelper();
-                            final soundDetails = await dbHelper.insertSound(SoundDetails(name: uri1.split("\\").last, path: uri1));
-                            await dbHelper.insertSoundContainerToSoundMapping(soundContainers[i], soundDetails);
-                            s = "$s and inserted!";
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(s)),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Not picked")),
-                            );
-                          }
-                        },
+                        //   if (result != null) {
+                        //     print(result.files.single.path!);
+                        //     final uri1 = result.files.single.path!;
+                        //     String s = "$uri1 picked";
+                        //     final dbHelper = DbHelper();
+                        //     final soundDetails = await dbHelper.insertSound(SoundDetails(name: uri1.split("\\").last, path: uri1));
+                        //     await dbHelper.insertSoundContainerToSoundMapping(soundContainers[i], soundDetails);
+                        //     s = "$s and inserted!";
+                        //     ScaffoldMessenger.of(context).showSnackBar(
+                        //       SnackBar(content: Text(s)),
+                        //     );
+                        //   } else {
+                        //     ScaffoldMessenger.of(context).showSnackBar(
+                        //       SnackBar(content: Text("Not picked")),
+                        //     );
+                        //   }
+                        // },
+                        onLongPress: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SoundContainerScreen(
+                              soundContainerId: soundContainers[i].soundContainerId!,
+                              onEdit: () {
+                                setState(() {
+                                  _loadFutures();
+                                });
+                              },
+                            ),
+                          ),
+                        ),
                         onPressed: () async {
                           final dbHelper = DbHelper();
-                          final soundDetails = await dbHelper.getSounds(soundContainerDetails: soundContainers[i]);
+                          final soundDetails = await dbHelper.getSounds(soundContainerId: soundContainers[i].soundContainerId!);
                           
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text("${List.generate(soundDetails.length, (i) => soundDetails[i].name)}")),
