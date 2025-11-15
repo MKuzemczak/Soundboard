@@ -84,6 +84,17 @@ class DbHelper {
 
   Future<SoundDetails> insertSound(SoundDetails soundDetails) async {
     final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      soundsTableName,
+      where: "path = ?",
+      whereArgs: [soundDetails.path],
+    );
+
+    if (maps.isNotEmpty) {
+      return SoundDetails.fromMap(maps[0]);
+    }
+
     int insertedId = await db.insert(
       soundsTableName,
       soundDetails.toMap(),
@@ -123,17 +134,28 @@ class DbHelper {
   }
 
   Future<void> insertSoundContainerToSoundMapping(
-    SoundContainerDetails soundContainerDetails,
+    int soundContainerId,
     SoundDetails soundDetails,
   ) async {
-    if (soundContainerDetails.soundContainerId == null ||
-        soundDetails.soundId == null) {
+    if (soundDetails.soundId == null) {
       return;
     }
+
     final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      soundContainersToSoundsTableName,
+      where: "soundContainerId = ? AND soundId = ?",
+      whereArgs: [soundContainerId, soundDetails.soundId!]
+    );
+
+    if (maps.isNotEmpty) {
+      return;
+    }
+
     await db.insert(soundContainersToSoundsTableName, {
-      "soundContainerId": soundContainerDetails.soundContainerId,
-      "soundId": soundDetails.soundId,
+      "soundContainerId": soundContainerId,
+      "soundId": soundDetails.soundId!,
     });
   }
 
@@ -147,8 +169,8 @@ class DbHelper {
     }
     final db = await database;
     await db.insert(soundboardsToSoundContainersTableName, {
-      "soundboardId": soundboardDetails.soundboardId,
-      "soundContainerId": soundContainerDetails.soundContainerId,
+      "soundboardId": soundboardDetails.soundboardId!,
+      "soundContainerId": soundContainerDetails.soundContainerId!,
     });
   }
 
@@ -281,39 +303,38 @@ class DbHelper {
       soundContainersTableName,
       soundContainerDetails.toMap(),
       where: "soundContainerId = ?",
-      whereArgs: [soundContainerDetails.soundContainerId!]
+      whereArgs: [soundContainerDetails.soundContainerId!],
     );
   }
 
-  // Future<bool> updateExercise(SoundDetails exercise) async {
-  //   final db = await database;
+  Future<void> unmapSoundFromSoundContainer({
+    required int soundId,
+    required int soundContainerId,
+  }) async {
+    final db = await database;
 
-  //   final List<Map<String, dynamic>> maps = await db.query(
-  //     "exercises",
-  //     where: "exerciseID = ?",
-  //     whereArgs: [exercise.exerciseID]);
+    await db.delete(
+      soundContainersToSoundsTableName,
+      where: "soundContainerId = ? AND soundId = ?",
+      whereArgs: [soundContainerId, soundId]
+    );
 
-  //   if (maps.isEmpty)
-  //   {
-  //     return false;
-  //   }
+    final List<Map<String, dynamic>> maps = await db
+        .query(
+          soundContainersToSoundsTableName,
+          where: "soundId = ?",
+          whereArgs: [soundId],
 
-  //   Exercise exerciseFromDb = Exercise.fromMap(maps[0]);
-
-  //   final bool exerciseChanged = exerciseFromDb.loadDetails.sets != exercise.loadDetails.sets
-  //     || exerciseFromDb.loadDetails.repsPerSet != exercise.loadDetails.repsPerSet
-  //     || exerciseFromDb.loadDetails.repLoad != exercise.loadDetails.repLoad
-  //     || exerciseFromDb.loadDetails.interval != exercise.loadDetails.interval;
-
-  //   await db.update(
-  //     "exercises",
-  //     exercise.toMap(),
-  //     where: "exerciseID = ?",
-  //     whereArgs: [exercise.exerciseID!],
-  //   );
-
-  //   return exerciseChanged;
-  // }
+        ); 
+    
+    if (maps.isEmpty) {
+      await db.delete(
+        soundsTableName,
+        where: "soundId = ?",
+        whereArgs: [soundId]
+      );
+    }
+  }
 
   // Future <void> removeExercise(int exerciseId) async {
   //   final db = await database;

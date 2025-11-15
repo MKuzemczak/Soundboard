@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
@@ -123,9 +124,25 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                           return SoundTile(
                             soundDetails: soundDetails,
                             onTapFunc: () {},
-                            onRemoveFunc: (context) {
-                              throw UnimplementedError();
-                            },
+                            onRemoveFunc: (context) => showDialog(
+                              context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                content: Text('Delete ${soundDetails.name}?'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () async {
+                                      await _deleteSound(soundDetails.soundId!);
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('Delete'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Cancel'),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -134,6 +151,10 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                 ),
               ),
             ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _addSound(),
+            child: Icon(Icons.add),
           ),
         );
       },
@@ -155,14 +176,47 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
     widget.onEdit();
   }
 
-  Future<void> _toggleLoop(
-    SoundContainerDetails soundContainerDetails,
-  ) async {
+  Future<void> _toggleLoop(SoundContainerDetails soundContainerDetails) async {
     soundContainerDetails.loop = !soundContainerDetails.loop;
     await DbHelper().updateSoundContainer(soundContainerDetails);
     setState(() {
       _loadFutures();
     });
     widget.onEdit();
+  }
+
+  Future<void> _deleteSound(int soundId) async {
+    await DbHelper().unmapSoundFromSoundContainer(
+      soundContainerId: widget.soundContainerId,
+      soundId: soundId,
+    );
+    setState(() {
+      _loadFutures();
+    });
+    widget.onEdit();
+  }
+
+  Future<void> _addSound() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      final uri1 = result.files.single.path!;
+      final dbHelper = DbHelper();
+      final soundDetails = await dbHelper.insertSound(
+        SoundDetails(name: uri1.split("\\").last, path: uri1),
+      );
+      await dbHelper.insertSoundContainerToSoundMapping(
+        widget.soundContainerId,
+        soundDetails,
+      );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("$uri1 added!")));
+      setState(() {
+        _loadFutures();
+      });
+      widget.onEdit();
+    }
   }
 }
