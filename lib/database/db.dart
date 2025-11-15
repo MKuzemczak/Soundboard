@@ -336,6 +336,47 @@ class DbHelper {
     }
   }
 
+  Future<void> unmapSoundContainerFromSoundboard({
+    required int soundboardId,
+    required int soundContainerId
+  }) async {
+    final db = await database;
+
+    await db.delete(
+      soundboardsToSoundContainersTableName,
+      where: "soundboardId = ? AND soundContainerId = ?",
+      whereArgs: [soundboardId, soundContainerId]
+    );
+
+    final List<Map<String, dynamic>> maps = await db
+        .query(
+          soundboardsToSoundContainersTableName,
+          where: "soundContainerId = ?",
+          whereArgs: [soundContainerId],
+
+        ); 
+    
+    if (maps.isEmpty) {
+      final List<Map<String, dynamic>> soundIdMaps = await db
+        .query(
+          soundContainersToSoundsTableName,
+          columns: ["soundId"],
+          where: "soundContainerId = ?",
+          whereArgs: [soundContainerId],
+        );
+
+      for (var map in soundIdMaps) {
+        await unmapSoundFromSoundContainer(soundContainerId: soundContainerId, soundId: map["soundId"]);
+      }
+
+      await db.delete(
+        soundContainersTableName,
+        where: "soundContainerId = ?",
+        whereArgs: [soundContainerId]
+      );
+    }
+  }
+
   // Future <void> removeExercise(int exerciseId) async {
   //   final db = await database;
 

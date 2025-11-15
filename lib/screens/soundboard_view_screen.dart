@@ -66,39 +66,7 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                       soundContainers.length,
                       (i) => ElevatedButton(
                         style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Color.fromRGBO(0, 0, 0, 1))),
-                        // onLongPress: () async {
-                        //   FilePickerResult? result = await FilePicker.platform.pickFiles();
-                  
-                        //   if (result != null) {
-                        //     print(result.files.single.path!);
-                        //     final uri1 = result.files.single.path!;
-                        //     String s = "$uri1 picked";
-                        //     final dbHelper = DbHelper();
-                        //     final soundDetails = await dbHelper.insertSound(SoundDetails(name: uri1.split("\\").last, path: uri1));
-                        //     await dbHelper.insertSoundContainerToSoundMapping(soundContainers[i], soundDetails);
-                        //     s = "$s and inserted!";
-                        //     ScaffoldMessenger.of(context).showSnackBar(
-                        //       SnackBar(content: Text(s)),
-                        //     );
-                        //   } else {
-                        //     ScaffoldMessenger.of(context).showSnackBar(
-                        //       SnackBar(content: Text("Not picked")),
-                        //     );
-                        //   }
-                        // },
-                        onLongPress: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SoundContainerScreen(
-                              soundContainerId: soundContainers[i].soundContainerId!,
-                              onEdit: () {
-                                setState(() {
-                                  _loadFutures();
-                                });
-                              },
-                            ),
-                          ),
-                        ),
+                        onLongPress: () => _showSoundContainerLongPressDialog(soundContainers[i]),
                         onPressed: () async {
                           final dbHelper = DbHelper();
                           final soundDetails = await dbHelper.getSounds(soundContainerId: soundContainers[i].soundContainerId!);
@@ -114,6 +82,73 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                 );
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteSoundCountainer(SoundContainerDetails soundContainerDetails) async {
+    await DbHelper().unmapSoundContainerFromSoundboard(
+      soundboardId: widget.soundboardDetails.soundboardId!,
+      soundContainerId: soundContainerDetails.soundContainerId!,
+    );
+    setState(() {
+      _loadFutures();
+    });
+  }
+
+  void _showSoundContainerLongPressDialog(SoundContainerDetails soundContainerDetails) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        content: Text('What do you want to do with ${soundContainerDetails.name}?'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Delete'),
+            onPressed: () {
+              Navigator.pop(context);
+              _showSoundContainerDeleteDialog(soundContainerDetails);
+            },
+          ),
+          TextButton(
+            child: const Text('Edit'),
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SoundContainerScreen(
+                    soundContainerId: soundContainerDetails.soundContainerId!,
+                    onEdit: () => setState(() {
+                        _loadFutures();
+                      }),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSoundContainerDeleteDialog(SoundContainerDetails soundContainerDetails) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        content: Text('Delete ${soundContainerDetails.name}?'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Delete'),
+            onPressed: () async {
+              await _deleteSoundCountainer(soundContainerDetails);
+              Navigator.pop(context);
+            },
+          ),
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
           ),
         ],
       ),
