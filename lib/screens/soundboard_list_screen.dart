@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/soundboard_details.dart';
+import 'package:sounboard/screens/audioplayers_test.dart';
+import 'package:sounboard/screens/sound_test.dart';
 import 'package:sounboard/screens/soundboard_view_screen.dart';
 import 'package:sounboard/utilities/soundboard_tile.dart';
 
@@ -68,6 +70,17 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
                 },
                 child: Text("Delete database"),
               ),
+              
+              ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AudioplayersTest(),
+                  ),
+                      ),
+                child: Text("audioplayers"),
+              ),
+              
             ],
           ),
           Expanded(

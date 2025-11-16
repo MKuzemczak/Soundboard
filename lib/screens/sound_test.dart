@@ -132,10 +132,11 @@ class _MultiPlaybackState extends State<MultiPlayback> {
       });
     });
     await _addListener1();
-    await loadFromDb();
+    // await loadFromDb();
+    await _mPlayer1!.setVolume(1.0);
     await _mPlayer1!.startPlayer(
-      // fromDataBuffer: buffer1,
-      fromURI: uri1,
+      fromDataBuffer: buffer1,
+      // fromURI: uri1,
       codec: Codec.mp3,
       whenFinished: () {
         stopPlayer1();
@@ -155,6 +156,11 @@ class _MultiPlaybackState extends State<MultiPlayback> {
   Future<void> stopPlayer1() async {
     cancelPlayerSubscriptions1();
     if (_mPlayer1 != null) {
+      for (double v = 100.0; v >= 0; v = v - 20.0) {
+        await _mPlayer1!.setVolume(v / 100);
+        setState(() {});
+        await Future.delayed(const Duration(seconds: 1));
+      }
       await _mPlayer1!.stopPlayer();
     }
     setState(() {});
@@ -162,7 +168,12 @@ class _MultiPlaybackState extends State<MultiPlayback> {
 
   Future<void> pause1() async {
     if (_mPlayer1 != null) {
-      await _mPlayer1!.pausePlayer();
+      // for (double v = 100.0; v >= 0; v = v - 0.1) {
+        await _mPlayer1!.setVolume(0.5);
+      //   setState(() {});
+        await Future.delayed(const Duration(seconds: 1));
+      // }
+      // await _mPlayer1!.pausePlayer();
     }
     setState(() {});
   }
