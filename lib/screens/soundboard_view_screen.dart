@@ -1,11 +1,10 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
-import 'package:sounboard/database/sound_details.dart';
 import 'package:sounboard/database/soundboard_details.dart';
 import 'package:sounboard/screens/sound_container_screen.dart';
 import 'package:sounboard/utilities/add_sound_container_dialog_box.dart';
+import 'package:sounboard/utilities/sound_container_button.dart';
 import 'package:stretch_wrap/stretch_wrap.dart';
 
 class SoundboardViewScreen extends StatefulWidget {
@@ -65,32 +64,41 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                     autoStretch: AutoStretch.all,
                     children: List.generate(
                       soundContainers.length,
-                      (i) => ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.all<Color>(
-                            Color.fromRGBO(0, 0, 0, 1),
-                          ),
-                        ),
+                      (i) => SoundContainerButton(
+                        soundContainerDetails: soundContainers[i],
                         onLongPress: () => _showSoundContainerLongPressDialog(
                           soundContainers[i],
                         ),
-                        onPressed: () async {
-                          final dbHelper = DbHelper();
-                          final soundDetails = await dbHelper.getSounds(
-                            soundContainerId:
-                                soundContainers[i].soundContainerId!,
-                          );
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "${List.generate(soundDetails.length, (i) => soundDetails[i].name)}",
-                              ),
-                            ),
-                          );
+                        onStartedPlaying: () {
+                          throw UnimplementedError();
                         },
-                        child: Text(soundContainers[i].name),
-                      ),
+                      )
+                      // (i) => ElevatedButton(
+                      //   style: ButtonStyle(
+                      //     backgroundColor: WidgetStateProperty.all<Color>(
+                      //       Color.fromRGBO(0, 0, 0, 1),
+                      //     ),
+                      //   ),
+                      //   onLongPress: () => _showSoundContainerLongPressDialog(
+                      //     soundContainers[i],
+                      //   ),
+                      //   onPressed: () async {
+                      //     final dbHelper = DbHelper();
+                      //     final soundDetails = await dbHelper.getSounds(
+                      //       soundContainerId:
+                      //           soundContainers[i].soundContainerId!,
+                      //     );
+
+                      //     ScaffoldMessenger.of(context).showSnackBar(
+                      //       SnackBar(
+                      //         content: Text(
+                      //           "${List.generate(soundDetails.length, (i) => soundDetails[i].name)}",
+                      //         ),
+                      //       ),
+                      //     );
+                      //   },
+                      //   child: Text(soundContainers[i].name),
+                      // ),
                     ),
                   ),
                 );

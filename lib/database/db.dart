@@ -200,7 +200,7 @@ class DbHelper {
         .query(
           soundContainersToSoundsTableName,
           where: "soundContainerId = ?",
-          whereArgs: [soundContainerId!],
+          whereArgs: [soundContainerId],
         );
 
     final List<int> soundIds = List.generate(
