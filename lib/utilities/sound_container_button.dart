@@ -7,12 +7,14 @@ import 'package:sounboard/database/sound_containter_details.dart';
 
 class SoundContainerButton extends StatefulWidget {
   final SoundContainerDetails soundContainerDetails;
+  final AudioPlayer audioPlayer1;
   final VoidCallback onLongPress;
   final VoidCallback onStartedPlaying;
 
   const SoundContainerButton({
     super.key,
     required this.soundContainerDetails,
+    required this.audioPlayer1,
     required this.onLongPress,
     required this.onStartedPlaying,
   });
@@ -25,7 +27,6 @@ class _SoundContainerButtonState extends State<SoundContainerButton> {
   PlayerState? _playerState;
   Duration? _position;
   AudioPlayer transitionAudioPlayer = AudioPlayer();
-  AudioPlayer audioPlayer1 = AudioPlayer();
 
   bool get _isPlaying => _playerState == PlayerState.playing;
 
@@ -36,8 +37,8 @@ class _SoundContainerButtonState extends State<SoundContainerButton> {
   @override
   void initState() {
     super.initState();
-    _playerState = audioPlayer1.state;
-    audioPlayer1.getCurrentPosition().then(
+    _playerState = widget.audioPlayer1.state;
+    widget.audioPlayer1.getCurrentPosition().then(
       (value) => setState(() {
         _position = value;
       }),
@@ -73,13 +74,13 @@ class _SoundContainerButtonState extends State<SoundContainerButton> {
       onLongPress: () => widget.onLongPress(),
       onPressed: () async {
         if (_isPlaying) {
-          audioPlayer1.stop();
+          widget.audioPlayer1.stop();
         } else {
           final sounds = await DbHelper().getSounds(soundContainerId: widget.soundContainerDetails.soundContainerId!);
           if (sounds.isEmpty) {
             return;
           }
-          audioPlayer1.play(DeviceFileSource(sounds[0].path));
+          widget.audioPlayer1.play(DeviceFileSource(sounds[0].path));
           widget.onStartedPlaying();
         }
       },
@@ -88,18 +89,18 @@ class _SoundContainerButtonState extends State<SoundContainerButton> {
   }
 
   void _initStreams() {
-    _positionSubscription = audioPlayer1.onPositionChanged.listen(
+    _positionSubscription = widget.audioPlayer1.onPositionChanged.listen(
       (p) => setState(() => _position = p),
     );
 
-    _playerCompleteSubscription = audioPlayer1.onPlayerComplete.listen((event) {
+    _playerCompleteSubscription = widget.audioPlayer1.onPlayerComplete.listen((event) {
       setState(() {
         _playerState = PlayerState.stopped;
         _position = Duration.zero;
       });
     });
 
-    _playerStateChangeSubscription = audioPlayer1.onPlayerStateChanged.listen((
+    _playerStateChangeSubscription = widget.audioPlayer1.onPlayerStateChanged.listen((
       state,
     ) {
       setState(() {

@@ -1,4 +1,6 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:sounboard/audio/audio_players_manager.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/soundboard_details.dart';
@@ -18,6 +20,9 @@ class SoundboardViewScreen extends StatefulWidget {
 
 class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
   late Future<List<SoundContainerDetails>> _soundContainersFuture;
+  final AudioPlayersManager _audioPlayersManager;
+
+  _SoundboardViewScreenState() : _audioPlayersManager = AudioPlayersManager();
 
   @override
   void initState() {
@@ -56,6 +61,8 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
 
                 final soundContainers = snapshot.data!;
 
+                _audioPlayersManager.rebuildAudioPlayersMap(soundContainers);
+
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: StretchWrap(
@@ -65,7 +72,9 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                     children: List.generate(
                       soundContainers.length,
                       (i) => SoundContainerButton(
+                        key: Key(soundContainers[i].name),
                         soundContainerDetails: soundContainers[i],
+                        audioPlayer1: _audioPlayersManager.getAudioPlayerForSoundConainer(soundContainers[i].soundContainerId!),
                         onLongPress: () => _showSoundContainerLongPressDialog(
                           soundContainers[i],
                         ),

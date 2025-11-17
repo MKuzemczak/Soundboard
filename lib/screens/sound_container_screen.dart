@@ -269,7 +269,7 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
       final uri1 = result.files.single.path!;
       final dbHelper = DbHelper();
       final soundDetails = await dbHelper.insertSound(
-        SoundDetails(name: uri1.split("\\").last, path: uri1),
+        SoundDetails(name: uri1.split("/").last, path: uri1),
       );
       await dbHelper.insertSoundContainerToSoundMapping(
         widget.soundContainerId,
