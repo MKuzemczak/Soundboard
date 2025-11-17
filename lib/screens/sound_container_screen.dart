@@ -98,6 +98,45 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                           await _toggleLoop(soundContainerDetails),
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.waves,
+                        color: (soundContainerDetails.transitions
+                            ? const Color.fromRGBO(108, 12, 186, 1)
+                            : const Color.fromRGBO(100, 100, 100, 1.0)),
+                      ),
+                      onPressed: () async =>
+                          await _toggleTransitions(soundContainerDetails),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.trending_up,
+                        color: (soundContainerDetails.fadeIn
+                            ? const Color.fromRGBO(108, 12, 186, 1)
+                            : const Color.fromRGBO(100, 100, 100, 1.0)),
+                      ),
+                      onPressed: () async =>
+                          await _toggleFadeIn(soundContainerDetails),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.trending_down,
+                        color: (soundContainerDetails.fadeOut
+                            ? const Color.fromRGBO(108, 12, 186, 1)
+                            : const Color.fromRGBO(100, 100, 100, 1.0)),
+                      ),
+                      onPressed: () async =>
+                          await _toggleFadeOut(soundContainerDetails),
+                    ),
+                  ),
                 ],
               ),
               Expanded(
@@ -178,6 +217,33 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
 
   Future<void> _toggleLoop(SoundContainerDetails soundContainerDetails) async {
     soundContainerDetails.loop = !soundContainerDetails.loop;
+    await DbHelper().updateSoundContainer(soundContainerDetails);
+    setState(() {
+      _loadFutures();
+    });
+    widget.onEdit();
+  }
+
+  Future<void> _toggleTransitions(SoundContainerDetails soundContainerDetails) async {
+    soundContainerDetails.transitions = !soundContainerDetails.transitions;
+    await DbHelper().updateSoundContainer(soundContainerDetails);
+    setState(() {
+      _loadFutures();
+    });
+    widget.onEdit();
+  }
+
+  Future<void> _toggleFadeIn(SoundContainerDetails soundContainerDetails) async {
+    soundContainerDetails.fadeIn = !soundContainerDetails.fadeIn;
+    await DbHelper().updateSoundContainer(soundContainerDetails);
+    setState(() {
+      _loadFutures();
+    });
+    widget.onEdit();
+  }
+
+  Future<void> _toggleFadeOut(SoundContainerDetails soundContainerDetails) async {
+    soundContainerDetails.fadeOut = !soundContainerDetails.fadeOut;
     await DbHelper().updateSoundContainer(soundContainerDetails);
     setState(() {
       _loadFutures();

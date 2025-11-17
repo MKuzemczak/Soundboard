@@ -121,6 +121,9 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
           onCancel: () => Navigator.pop(context),
           initialShuffleSwitchState: true,
           initialLoopSwitchState: true,
+          initialTransitionsSwitchState: true,
+          initialFadeInSwitchState: true,
+          initialFadeOutSwitchState: true,
         );
       },
     );

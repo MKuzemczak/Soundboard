@@ -47,6 +47,9 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
                         name: "sc$i",
                         shuffle: false,
                         loop: true,
+                        transitions: true,
+                        fadeIn: true,
+                        fadeOut: true,
                       ),
                     );
                     await dbHelper.insertSoundboardToSoundContainerMapping(

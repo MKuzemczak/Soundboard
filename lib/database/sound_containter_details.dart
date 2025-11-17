@@ -3,12 +3,18 @@ class SoundContainerDetails {
   String name;
   bool shuffle;
   bool loop;
+  bool transitions;
+  bool fadeIn;
+  bool fadeOut;
 
   SoundContainerDetails({
     this.soundContainerId,
     required this.name,
     required this.shuffle,
     required this.loop,
+    required this.transitions,
+    required this.fadeIn,
+    required this.fadeOut,
   });
 
   SoundContainerDetails clone() {
@@ -17,6 +23,9 @@ class SoundContainerDetails {
       name: name,
       shuffle: shuffle,
       loop: loop,
+      transitions: transitions,
+      fadeIn: fadeIn,
+      fadeOut: fadeOut,
     );
   }
 
@@ -25,6 +34,9 @@ class SoundContainerDetails {
       "name": name,
       "shuffle": (shuffle ? "1" : "0"),
       "loop": (loop ? "1" : "0"),
+      "transitions": (transitions ? "1" : "0"),
+      "fadeIn": (fadeIn ? "1" : "0"),
+      "fadeOut": (fadeOut ? "1" : "0"),
     };
     if (soundContainerId != null) {
       map["soundContainerId"] = soundContainerId.toString();
@@ -38,11 +50,21 @@ class SoundContainerDetails {
       name: map["name"],
       shuffle: map["shuffle"] == 1,
       loop: map["loop"] == 1,
+      transitions: map["transitions"] == 1,
+      fadeIn: map["fadeIn"] == 1,
+      fadeOut: map["fadeOut"] == 1,
     );
   }
 
   @override
   String toString() {
-    return "SoundContainerDetails{soundContainerId: $soundContainerId, name: $name, shuffle: $shuffle, loop: $loop}";
+    return "SoundContainerDetails{"
+        "soundContainerId: $soundContainerId, "
+        "name: $name, "
+        "shuffle: $shuffle, "
+        "loop: $loop, "
+        "transitions: $transitions"
+        "fadeIn: $fadeIn"
+        "fadeOut: $fadeOut}";
   }
 }

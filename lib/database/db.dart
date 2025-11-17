@@ -53,7 +53,10 @@ class DbHelper {
           "    soundContainerId INTEGER PRIMARY KEY AUTOINCREMENT,"
           "    name TEXT NOT NULL,"
           "    shuffle BIT NOT NULL,"
-          "    loop BIT NOT NULL);",
+          "    loop BIT NOT NULL,"
+          "    transitions BIT NOT NULL,"
+          "    fadeIn BIT NOT NULL,"
+          "    fadeOut BIT NOT NULL);",
         );
         await db.execute(
           "CREATE TABLE IF NOT EXISTS $soundContainersToSoundsTableName ("
@@ -78,8 +81,6 @@ class DbHelper {
   Future<void> deleteDb() async {
     final path = join(await getDatabasesPath(), soundDbFileName);
     await deleteDatabase(path);
-    final path2 = join(await getDatabasesPath(), "exercises.db");
-    await deleteDatabase(path2);
   }
 
   Future<SoundDetails> insertSound(SoundDetails soundDetails) async {
