@@ -74,7 +74,7 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                       (i) => SoundContainerButton(
                         key: Key(soundContainers[i].name),
                         soundContainerDetails: soundContainers[i],
-                        audioPlayer1: _audioPlayersManager.getAudioPlayerForSoundConainer(soundContainers[i].soundContainerId!),
+                        audioPlayerBundle: _audioPlayersManager.getAudioPlayerBundleForSoundConainer(soundContainers[i].soundContainerId!),
                         onLongPress: () => _showSoundContainerLongPressDialog(
                           soundContainers[i],
                         ),
