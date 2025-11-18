@@ -1,6 +1,7 @@
-import 'package:audioplayers/audioplayers.dart';
+// import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/audio/audio_players_manager.dart';
+import 'package:sounboard/audio/sound_container_player.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/soundboard_details.dart';
@@ -74,40 +75,20 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                       (i) => SoundContainerButton(
                         key: Key(soundContainers[i].name),
                         soundContainerDetails: soundContainers[i],
-                        audioPlayerBundle: _audioPlayersManager.getAudioPlayerBundleForSoundConainer(soundContainers[i].soundContainerId!),
+                        soundContainerPlayer: SoundContainerPlayer(
+                          soundContainerDetails: soundContainers[i],
+                          audioPlayerBundle: _audioPlayersManager
+                              .getAudioPlayerBundleForSoundConainer(
+                                soundContainers[i].soundContainerId!,
+                              ),
+                        ),
                         onLongPress: () => _showSoundContainerLongPressDialog(
                           soundContainers[i],
                         ),
                         onStartedPlaying: () {
-                          throw UnimplementedError();
+                          // throw UnimplementedError();
                         },
-                      )
-                      // (i) => ElevatedButton(
-                      //   style: ButtonStyle(
-                      //     backgroundColor: WidgetStateProperty.all<Color>(
-                      //       Color.fromRGBO(0, 0, 0, 1),
-                      //     ),
-                      //   ),
-                      //   onLongPress: () => _showSoundContainerLongPressDialog(
-                      //     soundContainers[i],
-                      //   ),
-                      //   onPressed: () async {
-                      //     final dbHelper = DbHelper();
-                      //     final soundDetails = await dbHelper.getSounds(
-                      //       soundContainerId:
-                      //           soundContainers[i].soundContainerId!,
-                      //     );
-
-                      //     ScaffoldMessenger.of(context).showSnackBar(
-                      //       SnackBar(
-                      //         content: Text(
-                      //           "${List.generate(soundDetails.length, (i) => soundDetails[i].name)}",
-                      //         ),
-                      //       ),
-                      //     );
-                      //   },
-                      //   child: Text(soundContainers[i].name),
-                      // ),
+                      ),
                     ),
                   ),
                 );
