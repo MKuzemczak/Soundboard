@@ -75,18 +75,15 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                       (i) => SoundContainerButton(
                         key: Key(soundContainers[i].name),
                         soundContainerDetails: soundContainers[i],
-                        soundContainerPlayer: SoundContainerPlayer(
-                          soundContainerDetails: soundContainers[i],
-                          audioPlayerBundle: _audioPlayersManager
-                              .getAudioPlayerBundleForSoundConainer(
-                                soundContainers[i].soundContainerId!,
-                              ),
-                        ),
+                        soundContainerPlayer: _audioPlayersManager
+                            .getSoundContainerPlayerForSoundConainer(
+                              soundContainers[i].soundContainerId!,
+                            ),
                         onLongPress: () => _showSoundContainerLongPressDialog(
                           soundContainers[i],
                         ),
                         onStartedPlaying: () {
-                          // throw UnimplementedError();
+                          _stopPlayersOtherThan(soundContainers[i]);
                         },
                       ),
                     ),
@@ -199,6 +196,12 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _stopPlayersOtherThan(SoundContainerDetails soundContainerDetails) {
+    _audioPlayersManager.stopAudioPlayersOtherThan(
+      soundContainerDetails.soundContainerId!,
     );
   }
 }
