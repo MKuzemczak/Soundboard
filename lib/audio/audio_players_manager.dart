@@ -8,7 +8,7 @@ class AudioPlayersManager {
     {},
   );
   final Map<int, SoundContainerPlayer>
-  _soundContainerIdToSoundContainerPlayer; // TODO: change AudioPlayerBundle to SoundContainerPlayer
+  _soundContainerIdToSoundContainerPlayer;
 
   factory AudioPlayersManager() {
     return _singleton;
@@ -55,9 +55,9 @@ class AudioPlayersManager {
   }
 
   void stopAudioPlayersOtherThan(int soundContainerId) {
-    _soundContainerIdToSoundContainerPlayer.forEach((id, audioPlayerBundle) {
+    _soundContainerIdToSoundContainerPlayer.forEach((id, soundContainerPlayer) {
       if (soundContainerId != id) {
-        audioPlayerBundle.stop();
+        soundContainerPlayer.stop();
       }
     });
   }

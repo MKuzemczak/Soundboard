@@ -21,11 +21,21 @@ class SoundContainerButton extends StatefulWidget {
 }
 
 class _SoundContainerButtonState extends State<SoundContainerButton> {
+  bool? isP;
 
   @override
   void initState() {
     super.initState();
-    widget.soundContainerPlayer.setOnStateChanged(() { setState(() {}); });
+    widget.soundContainerPlayer.setOnStateChanged(() {
+      setState(() {});
+      if (widget.soundContainerDetails.soundContainerId != 5 || widget.soundContainerPlayer.isPlaying == isP) {
+        return;
+      }
+      isP = widget.soundContainerPlayer.isPlaying;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("1 widget.soundContainerPlayer.isPlaying: ${widget.soundContainerPlayer.isPlaying}")));
+    });
   }
 
   @override
@@ -51,7 +61,10 @@ class _SoundContainerButtonState extends State<SoundContainerButton> {
       onLongPress: () => widget.onLongPress(),
       onPressed: () async {
         if (widget.soundContainerPlayer.isPlaying) {
-          widget.soundContainerPlayer.stop();
+          await widget.soundContainerPlayer.stop();
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("2 widget.soundContainerPlayer.isPlaying: ${widget.soundContainerPlayer.isPlaying}")));
         } else {
           widget.soundContainerPlayer.play();
           widget.onStartedPlaying();

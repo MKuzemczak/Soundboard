@@ -42,6 +42,11 @@ class SoundContainerPlayer {
     audioPlayerBundle.audioPlayer1.setReleaseMode(ReleaseMode.stop);
     audioPlayerBundle.audioPlayer2.setReleaseMode(ReleaseMode.stop);
     audioPlayerBundle.transitionAudioPlayer.setReleaseMode(ReleaseMode.stop);
+
+    audioPlayerBundle.audioPlayer1.setAudioContext(AudioContext(android: AudioContextAndroid(audioFocus: AndroidAudioFocus.none)));
+    audioPlayerBundle.audioPlayer2.setAudioContext(AudioContext(android: AudioContextAndroid(audioFocus: AndroidAudioFocus.none)));
+    audioPlayerBundle.transitionAudioPlayer.setAudioContext(AudioContext(android: AudioContextAndroid(audioFocus: AndroidAudioFocus.none)));
+
     _initPositions();
     _initStreams();
   }
@@ -57,11 +62,19 @@ class SoundContainerPlayer {
     }
     
     final sounds = await DbHelper().getSounds(soundContainerId: soundContainerDetails.soundContainerId!);
+    Source? source;
     if (sounds.isEmpty) {
-      return;
+      source = AssetSource("sound/mia.mp3");
+    }
+    else {
+      source = DeviceFileSource(sounds[0].path);
     }
 
+    int fadeInDelayMilliseconds = 30;
+
     if (soundContainerDetails.transitions) {
+      fadeInDelayMilliseconds = 15;
+
       final rng = Random();
       final crashId = rng.nextInt(4) + 1;
       await audioPlayerBundle.transitionAudioPlayer.play(AssetSource("sound/cymbal_roll_$crashId.mp3"));
@@ -75,16 +88,16 @@ class SoundContainerPlayer {
 
     if (soundContainerDetails.fadeIn) {
       await audioPlayerBundle.audioPlayer1.setVolume(0);
-      audioPlayerBundle.audioPlayer1.play(DeviceFileSource(sounds[0].path));
+      audioPlayerBundle.audioPlayer1.play(source);
       for (double v = 0; v < 1; v = v + 0.01) {
         await audioPlayerBundle.audioPlayer1.setVolume(v);
-        await Future.delayed(Duration(milliseconds: 30));
+        await Future.delayed(Duration(milliseconds: fadeInDelayMilliseconds));
       }
       await audioPlayerBundle.audioPlayer1.setVolume(1);
     }
     else {
       await audioPlayerBundle.audioPlayer1.setVolume(1);
-      audioPlayerBundle.audioPlayer1.play(DeviceFileSource(sounds[0].path));
+      audioPlayerBundle.audioPlayer1.play(source);
     }
   }
 
@@ -99,6 +112,8 @@ class SoundContainerPlayer {
     }
     await audioPlayerBundle.audioPlayer1.setVolume(0);
     await audioPlayerBundle.audioPlayer1.stop();
+    await audioPlayerBundle.audioPlayer2.stop();
+    await audioPlayerBundle.transitionAudioPlayer.stop();
   }
 
   void setOnStateChanged(VoidCallback cb) {
@@ -117,7 +132,6 @@ class SoundContainerPlayer {
         .onPositionChanged
         .listen((p) {
           _audioPlayer1Position = p;
-          onStateChanged?.call();
         });
 
     _audioPlayer1CompleteSubscription = audioPlayerBundle
@@ -143,7 +157,6 @@ class SoundContainerPlayer {
         .onPositionChanged
         .listen((p) {
           _audioPlayer2Position = p;
-          onStateChanged?.call();
         });
 
     _audioPlayer2CompleteSubscription = audioPlayerBundle
@@ -169,7 +182,6 @@ class SoundContainerPlayer {
         .onPositionChanged
         .listen((p) {
           _transitionAudioPlayerPosition = p;
-          onStateChanged?.call();
         });
 
     _transitionAudioPlayerCompleteSubscription = audioPlayerBundle
