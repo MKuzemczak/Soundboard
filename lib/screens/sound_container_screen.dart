@@ -343,6 +343,8 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
         await dbHelper.insertSoundContainerToSoundMapping(
           widget.soundContainerId,
           soundDetails,
+          0, // TODO: add prompt for start and end seconds
+          0,
         );
       }
       ScaffoldMessenger.of(

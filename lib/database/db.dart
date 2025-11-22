@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/sound_details.dart';
+import 'package:sounboard/database/sound_mapping_details.dart';
 import 'package:sounboard/database/soundboard_details.dart';
 import 'package:sqflite_common_porter/sqflite_porter.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -61,7 +62,9 @@ class DbHelper {
         await db.execute(
           "CREATE TABLE IF NOT EXISTS $soundContainersToSoundsTableName ("
           "    soundContainerId INTEGER NOT NULL,"
-          "    soundId INTEGER NOT NULL);",
+          "    soundId INTEGER NOT NULL,"
+          "    startSeconds INTEGER NOT NULL,"
+          "    endSeconds INTEGER NOT NULL);",
         );
         await db.execute(
           "CREATE TABLE IF NOT EXISTS $soundboardsTableName ("
@@ -137,6 +140,8 @@ class DbHelper {
   Future<void> insertSoundContainerToSoundMapping(
     int soundContainerId,
     SoundDetails soundDetails,
+    int startSeconds,
+    int endSeconds,
   ) async {
     if (soundDetails.soundId == null) {
       return;
@@ -157,6 +162,8 @@ class DbHelper {
     await db.insert(soundContainersToSoundsTableName, {
       "soundContainerId": soundContainerId,
       "soundId": soundDetails.soundId!,
+      "startSeconds": startSeconds,
+      "endSeconds": endSeconds,
     });
   }
 
@@ -218,6 +225,46 @@ class DbHelper {
       soundsMaps.length,
       (i) => SoundDetails.fromMap(soundsMaps[i]),
     );
+  }
+
+  Future<List<SoundMappingDetails>> getSoundMappings(
+    int soundContainerId,
+  ) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> soundMappingsMaps = await db.query(
+      soundContainersToSoundsTableName,
+      where: "soundContainerId = ?",
+      whereArgs: [soundContainerId],
+    );
+
+    final List<int> soundIds = List.generate(
+      soundMappingsMaps.length,
+      (i) => soundMappingsMaps[i]["soundId"],
+    );
+
+    final List<Map<String, dynamic>> soundsMaps = await db.query(
+      soundsTableName,
+      where: "soundId IN (${List.filled(soundIds.length, '?').join(',')})",
+      whereArgs: soundIds,
+    );
+
+    final List<SoundDetails> sounds = List.generate(
+      soundsMaps.length,
+      (i) => SoundDetails.fromMap(soundsMaps[i]),
+    );
+
+    return List.generate(soundMappingsMaps.length, (i) {
+      final sound = sounds.firstWhere(
+        (s) => s.soundId == soundMappingsMaps[i]["soundId"],
+        orElse: () => SoundDetails(name: "null", path: "null"),
+      );
+      return SoundMappingDetails(
+        soundDetails: sound,
+        startSeconds: soundMappingsMaps[i]["startSeconds"],
+        endSeconds: soundMappingsMaps[i]["endSeconds"],
+      );
+    });
   }
 
   Future<SoundContainerDetails?> getSoundContainer(int soundContainerId) async {

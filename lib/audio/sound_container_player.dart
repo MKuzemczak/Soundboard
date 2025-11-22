@@ -187,16 +187,16 @@ class SoundContainerPlayer {
   }
 
   Future<Source?> _getNextSource() async {
-    final sounds = await DbHelper().getSounds(
-      soundContainerId: soundContainerDetails.soundContainerId!,
+    final soundMappings = await DbHelper().getSoundMappings(
+      soundContainerDetails.soundContainerId!,
     );
     Source? source;
-    if (sounds.isEmpty) {
+    if (soundMappings.isEmpty) {
       source = AssetSource("sound/mia.mp3");
     } else {
-      final soundIndex = _getNextSoundIndex(sounds.length);
+      final soundIndex = _getNextSoundIndex(soundMappings.length);
       if (soundIndex != null) {
-        source = DeviceFileSource(sounds[soundIndex].path);
+        source = DeviceFileSource(soundMappings[soundIndex].soundDetails.path);
       }
     }
     return source;
