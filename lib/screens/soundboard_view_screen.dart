@@ -1,7 +1,6 @@
 // import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/audio/audio_players_manager.dart';
-import 'package:sounboard/audio/sound_container_player.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/soundboard_details.dart';

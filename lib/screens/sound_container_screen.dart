@@ -328,22 +328,26 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
   }
 
   Future<void> _addSound() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
 
     if (result != null) {
-      final uri1 = result.files.single.path!;
-      final dbHelper = DbHelper();
-      final soundDetails = await dbHelper.insertSound(
-        SoundDetails(name: uri1.split("/").last, path: uri1),
-      );
-      await dbHelper.insertSoundContainerToSoundMapping(
-        widget.soundContainerId,
-        soundDetails,
-      );
-
+      for (var platformFile in result.files) {
+        if (platformFile.path == null) {
+          continue;
+        }
+        final uri = platformFile.path!;
+        final dbHelper = DbHelper();
+        final soundDetails = await dbHelper.insertSound(
+          SoundDetails(name: uri.split("/").last.split("\\").last, path: uri),
+        );
+        await dbHelper.insertSoundContainerToSoundMapping(
+          widget.soundContainerId,
+          soundDetails,
+        );
+      }
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("$uri1 added!")));
+      ).showSnackBar(SnackBar(content: Text("Sounds added!")));
       setState(() {
         _loadFutures();
       });
