@@ -1,10 +1,11 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/sound_details.dart';
+import 'package:sounboard/database/sound_mapping_details.dart';
 import 'package:sounboard/utilities/add_sound_dialog_box.dart';
+import 'package:sounboard/utilities/edit_sound_mapping_dialog_box.dart';
 import 'package:sounboard/utilities/sound_tile.dart';
 
 class SoundContainerScreen extends StatefulWidget {
@@ -23,7 +24,7 @@ class SoundContainerScreen extends StatefulWidget {
 
 class _SoundContainerScreenState extends State<SoundContainerScreen> {
   late Future<SoundContainerDetails?> _soundContainerFuture;
-  late Future<List<SoundDetails>> _soundsFuture;
+  late Future<List<SoundMappingDetails>> _soundsFuture;
 
   @override
   void initState() {
@@ -33,9 +34,7 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
 
   void _loadFutures() {
     final dbHelper = DbHelper();
-    _soundsFuture = dbHelper.getSounds(
-      soundContainerId: widget.soundContainerId,
-    );
+    _soundsFuture = dbHelper.getSoundMappings(widget.soundContainerId);
     _soundContainerFuture = dbHelper.getSoundContainer(widget.soundContainerId);
   }
 
@@ -78,7 +77,11 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 8.0),
+                        padding: const EdgeInsets.only(
+                          left: 12.0,
+                          right: 12.0,
+                          top: 8.0,
+                        ),
                         child: IconButton(
                           icon: Icon(
                             Icons.shuffle,
@@ -104,7 +107,11 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 8.0),
+                        padding: const EdgeInsets.only(
+                          left: 12.0,
+                          right: 12.0,
+                          top: 8.0,
+                        ),
                         child: IconButton(
                           icon: Icon(
                             Icons.loop,
@@ -130,7 +137,11 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 8.0),
+                        padding: const EdgeInsets.only(
+                          left: 15.0,
+                          right: 15.0,
+                          top: 8.0,
+                        ),
                         child: IconButton(
                           icon: Icon(
                             Icons.waves,
@@ -156,7 +167,11 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 8.0),
+                        padding: const EdgeInsets.only(
+                          left: 12.0,
+                          right: 12.0,
+                          top: 8.0,
+                        ),
                         child: IconButton(
                           icon: Icon(
                             Icons.trending_up,
@@ -182,7 +197,11 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 8.0),
+                        padding: const EdgeInsets.only(
+                          left: 12.0,
+                          right: 12.0,
+                          top: 8.0,
+                        ),
                         child: IconButton(
                           icon: Icon(
                             Icons.trending_down,
@@ -218,26 +237,26 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                       return const Center(child: Text('No sounds found.'));
                     }
 
-                    final sounds = snapshot.data!;
+                    final soundMappings = snapshot.data!;
 
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ListView.builder(
-                        itemCount: sounds.length,
+                        itemCount: soundMappings.length,
                         itemBuilder: (context, index) {
-                          final soundDetails = sounds[index];
+                          final soundMappingDetails = soundMappings[index];
 
                           return SoundTile(
-                            soundDetails: soundDetails,
-                            onTapFunc: () {},
+                            soundDetails: soundMappingDetails.soundDetails,
+                            onTapFunc: () => _editSound(soundMappingDetails),
                             onRemoveFunc: (context) => showDialog(
                               context: context,
                               builder: (BuildContext context) => AlertDialog(
-                                content: Text('Delete ${soundDetails.name}?'),
+                                content: Text('Delete ${soundMappingDetails.soundDetails.name}?'),
                                 actions: <Widget>[
                                   TextButton(
                                     onPressed: () async {
-                                      await _deleteSound(soundDetails.soundId!);
+                                      await _deleteSoundMapping(soundMappingDetails.soundDetails.soundId!);
                                       Navigator.pop(context);
                                     },
                                     child: const Text('Delete'),
@@ -291,7 +310,9 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
     widget.onEdit();
   }
 
-  Future<void> _toggleTransitions(SoundContainerDetails soundContainerDetails) async {
+  Future<void> _toggleTransitions(
+    SoundContainerDetails soundContainerDetails,
+  ) async {
     soundContainerDetails.transitions = !soundContainerDetails.transitions;
     await DbHelper().updateSoundContainer(soundContainerDetails);
     setState(() {
@@ -300,7 +321,9 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
     widget.onEdit();
   }
 
-  Future<void> _toggleFadeIn(SoundContainerDetails soundContainerDetails) async {
+  Future<void> _toggleFadeIn(
+    SoundContainerDetails soundContainerDetails,
+  ) async {
     soundContainerDetails.fadeIn = !soundContainerDetails.fadeIn;
     await DbHelper().updateSoundContainer(soundContainerDetails);
     setState(() {
@@ -309,7 +332,9 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
     widget.onEdit();
   }
 
-  Future<void> _toggleFadeOut(SoundContainerDetails soundContainerDetails) async {
+  Future<void> _toggleFadeOut(
+    SoundContainerDetails soundContainerDetails,
+  ) async {
     soundContainerDetails.fadeOut = !soundContainerDetails.fadeOut;
     await DbHelper().updateSoundContainer(soundContainerDetails);
     setState(() {
@@ -318,7 +343,7 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
     widget.onEdit();
   }
 
-  Future<void> _deleteSound(int soundId) async {
+  Future<void> _deleteSoundMapping(int soundId) async {
     await DbHelper().unmapSoundFromSoundContainer(
       soundContainerId: widget.soundContainerId,
       soundId: soundId,
@@ -329,8 +354,9 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
     widget.onEdit();
   }
 
-  Future<void> _addSound() async {
-    final AudioPlayer audioPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
+  void _addSound() {
+    final AudioPlayer audioPlayer = AudioPlayer()
+      ..setReleaseMode(ReleaseMode.stop);
     showDialog(
       context: context,
       builder: (context) {
@@ -346,6 +372,33 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
             });
           },
           audioPlayer: audioPlayer,
+        );
+      },
+    ).then((_) {
+      audioPlayer.stop();
+    });
+  }
+
+  Future<void> _editSound(SoundMappingDetails soundMappingDetails) async {
+    final AudioPlayer audioPlayer = AudioPlayer()
+      ..setReleaseMode(ReleaseMode.stop);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return EditSoundMappingDialogBox(
+          soundContainerId: widget.soundContainerId,
+          onCancel: () {
+            Navigator.pop(context);
+          },
+          onSave: () {
+            Navigator.pop(context);
+            setState(() {
+              _loadFutures();
+            });
+            widget.onEdit();
+          },
+          audioPlayer: audioPlayer,
+          soundMappingDetails: soundMappingDetails,
         );
       },
     ).then((_) {

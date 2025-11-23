@@ -165,6 +165,24 @@ class DbHelper {
     });
   }
 
+  Future<void> updateSoundContainerToSoundMapping(
+    int soundContainerId,
+    SoundMappingDetails soundMappingDetails,
+  ) async {
+    final db = await database;
+    await db.update(
+      soundContainersToSoundsTableName,
+      {
+        "soundContainerId": soundContainerId,
+        "soundId": soundMappingDetails.soundDetails.soundId!,
+        "startSeconds": soundMappingDetails.startSeconds,
+        "endSeconds": soundMappingDetails.endSeconds,
+      },
+      where: "soundContainerId = ? AND soundId = ?",
+      whereArgs: [soundContainerId, soundMappingDetails.soundDetails.soundId!],
+    );
+  }
+
   Future<void> insertSoundboardToSoundContainerMapping({
     required int soundboardId,
     required int soundContainerId,
