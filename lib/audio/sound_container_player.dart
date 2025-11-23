@@ -4,8 +4,11 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/audio/audio_player_bundle.dart';
+import 'package:sounboard/audio/sound_source_wrapper.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
+import 'package:sounboard/database/sound_details.dart';
+import 'package:sounboard/database/sound_mapping_details.dart';
 
 class SoundContainerPlayer {
   SoundContainerDetails soundContainerDetails;
@@ -111,14 +114,13 @@ class SoundContainerPlayer {
 
       await _playTransition();
     }
-    final source = await _getNextSource();
-
-    if (source != null) {
+    final soundSourceWrapper = await _getNextSource();
+    if (soundSourceWrapper != null) {
       if (_currentPlayer == null) {
         _setCurrentPlayer(audioPlayerBundle.audioPlayer1);
       }
 
-      await _startPlayer(_currentPlayer!, source, fadeInDelayMilliseconds);
+      await _startPlayer(_currentPlayer!, soundSourceWrapper, fadeInDelayMilliseconds);
     }
   }
 
@@ -152,14 +154,22 @@ class SoundContainerPlayer {
     await player.stop();
   }
 
+  Future<void> _playSource(AudioPlayer player, SoundSourceWrapper soundSourceWrapper) async {
+    await player.setSource(soundSourceWrapper.source);
+    if (soundSourceWrapper.soundMappingDetails != null) {
+      await player.seek(Duration(seconds: soundSourceWrapper.soundMappingDetails!.startSeconds));
+    }
+    await player.resume();
+  }
+
   Future<void> _startPlayer(
     AudioPlayer player,
-    Source source,
+    SoundSourceWrapper soundSourceWrapper,
     int fadeInDelayMilliseconds,
   ) async {
     if (soundContainerDetails.fadeIn) {
       await player.setVolume(0);
-      player.play(source);
+      _playSource(player, soundSourceWrapper);
       for (double v = 0; v < 1; v = v + 0.01) {
         await player.setVolume(v);
         await Future.delayed(Duration(milliseconds: fadeInDelayMilliseconds));
@@ -167,7 +177,7 @@ class SoundContainerPlayer {
       await player.setVolume(1);
     } else {
       await player.setVolume(1);
-      player.play(source);
+      _playSource(player, soundSourceWrapper);
     }
   }
 
@@ -186,29 +196,35 @@ class SoundContainerPlayer {
     }
   }
 
-  Future<Source?> _getNextSource() async {
+  Future<SoundSourceWrapper?> _getNextSource() async {
     final soundMappings = await DbHelper().getSoundMappings(
       soundContainerDetails.soundContainerId!,
     );
-    Source? source;
+
     if (soundMappings.isEmpty) {
-      source = AssetSource("sound/mia.mp3");
-    } else {
-      final soundIndex = _getNextSoundIndex(soundMappings.length);
-      if (soundIndex != null) {
-        source = DeviceFileSource(soundMappings[soundIndex].soundDetails.path);
-      }
+      return SoundSourceWrapper(
+        soundMappingDetails: null,
+        source: AssetSource("sound/mia.mp3"),
+      );
     }
-    return source;
+
+    final soundIndex = _getNextSoundIndex(soundMappings.length);
+    if (soundIndex != null) {
+      return SoundSourceWrapper(
+        soundMappingDetails: soundMappings[soundIndex],
+        source: DeviceFileSource(soundMappings[soundIndex].soundDetails.path),
+      );
+    }
+    return null;
   }
 
   int? _getNextSoundIndex(int soundsListSize) {
     int? result;
     if (soundContainerDetails.shuffle) {
       final rng = Random();
-      int soundIndex = rng.nextInt(soundsListSize);
-      while (soundIndex == _currentSoundIndex) {
-        soundIndex = rng.nextInt(soundsListSize);
+      result = rng.nextInt(soundsListSize);
+      while (result == _currentSoundIndex) {
+        result = rng.nextInt(soundsListSize);
       }
     } else {
       if (_currentSoundIndex == soundsListSize - 1) {
@@ -257,10 +273,10 @@ class SoundContainerPlayer {
           millisecondsUntilEnd >= _stepsToPlayNextSound[i + 1]) {
         if (nextPlayer.state != PlayerState.playing && !_nextPlayerStarted) {
           _nextPlayerStarted = true;
-          final source = await _getNextSource();
+          final soundSourceWrapper = await _getNextSource();
 
-          if (source != null) {
-            await nextPlayer.play(source);
+          if (soundSourceWrapper != null) {
+            await _playSource(nextPlayer, soundSourceWrapper);
           }
         }
 
@@ -270,12 +286,13 @@ class SoundContainerPlayer {
           nextPlayer.setVolume(1);
           _setCurrentPlayer(nextPlayer);
           _nextPlayerStarted = false;
-        }
-        else {
+        } else {
           _currentPlayer!.setVolume(
             1.0 - (i.toDouble() / (_stepsToPlayNextSound.length - 1)),
           );
-          nextPlayer.setVolume(i.toDouble() / (_stepsToPlayNextSound.length - 1));
+          nextPlayer.setVolume(
+            i.toDouble() / (_stepsToPlayNextSound.length - 1),
+          );
         }
         break;
       }

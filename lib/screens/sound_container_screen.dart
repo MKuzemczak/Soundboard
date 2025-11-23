@@ -1,8 +1,10 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/sound_details.dart';
+import 'package:sounboard/utilities/add_sound_dialog_box.dart';
 import 'package:sounboard/utilities/sound_tile.dart';
 
 class SoundContainerScreen extends StatefulWidget {
@@ -328,32 +330,26 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
   }
 
   Future<void> _addSound() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
-
-    if (result != null) {
-      for (var platformFile in result.files) {
-        if (platformFile.path == null) {
-          continue;
-        }
-        final uri = platformFile.path!;
-        final dbHelper = DbHelper();
-        final soundDetails = await dbHelper.insertSound(
-          SoundDetails(name: uri.split("/").last.split("\\").last, path: uri),
+    final AudioPlayer audioPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AddSoundDialogBox(
+          soundContainerId: widget.soundContainerId,
+          onCancel: () {
+            Navigator.pop(context);
+          },
+          onSave: () {
+            Navigator.pop(context);
+            setState(() {
+              _loadFutures();
+            });
+          },
+          audioPlayer: audioPlayer,
         );
-        await dbHelper.insertSoundContainerToSoundMapping(
-          widget.soundContainerId,
-          soundDetails,
-          0, // TODO: add prompt for start and end seconds
-          0,
-        );
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Sounds added!")));
-      setState(() {
-        _loadFutures();
-      });
-      widget.onEdit();
-    }
+      },
+    ).then((_) {
+      audioPlayer.stop();
+    });
   }
 }

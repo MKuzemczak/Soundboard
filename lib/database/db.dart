@@ -139,11 +139,9 @@ class DbHelper {
 
   Future<void> insertSoundContainerToSoundMapping(
     int soundContainerId,
-    SoundDetails soundDetails,
-    int startSeconds,
-    int endSeconds,
+    SoundMappingDetails soundMappingDetails,
   ) async {
-    if (soundDetails.soundId == null) {
+    if (soundMappingDetails.soundDetails.soundId == null) {
       return;
     }
 
@@ -152,7 +150,7 @@ class DbHelper {
     final List<Map<String, dynamic>> maps = await db.query(
       soundContainersToSoundsTableName,
       where: "soundContainerId = ? AND soundId = ?",
-      whereArgs: [soundContainerId, soundDetails.soundId!],
+      whereArgs: [soundContainerId, soundMappingDetails.soundDetails.soundId!],
     );
 
     if (maps.isNotEmpty) {
@@ -161,9 +159,9 @@ class DbHelper {
 
     await db.insert(soundContainersToSoundsTableName, {
       "soundContainerId": soundContainerId,
-      "soundId": soundDetails.soundId!,
-      "startSeconds": startSeconds,
-      "endSeconds": endSeconds,
+      "soundId": soundMappingDetails.soundDetails.soundId!,
+      "startSeconds": soundMappingDetails.startSeconds,
+      "endSeconds": soundMappingDetails.endSeconds,
     });
   }
 
