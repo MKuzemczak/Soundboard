@@ -29,17 +29,20 @@ class _AddSoundDialogBoxState extends State<AddSoundDialogBox> {
   String? _name;
   String? _path;
   PlayerState? _audioPlayerState;
+  // ignore: unused_field
   StreamSubscription? _positionSubscription;
+  // ignore: unused_field
   StreamSubscription? _durationSubscription;
+  // ignore: unused_field
+  StreamSubscription? _playerCompleteSubscription;
   Duration? _position;
   Duration? _duration;
 
   final TextEditingController _startSecondsController = TextEditingController(
     text: "0",
   );
-  final TextEditingController _endSecondsController = TextEditingController(
-    text: "0",
-  );
+  final TextEditingController _endSecondsController = TextEditingController();
+  bool _isEndSecondsGreaterThanStartSeconds = false;
 
   String get _durationText => _duration?.toString().split('.').first ?? '';
 
@@ -102,12 +105,13 @@ class _AddSoundDialogBoxState extends State<AddSoundDialogBox> {
                               hintText: 'Start seconds',
                             ),
                             onChanged: (value) async {
-                              if (value == "") {
-                                return;
-                              }
-                              final int intVal = int.parse(value);
+                              final int startSeconds = _getSeconds(value);
+                              final int endSeconds = _getSeconds(_endSecondsController.text);
+                              setState(() {
+                                _isEndSecondsGreaterThanStartSeconds = (endSeconds > startSeconds);
+                              },);
                               await widget.audioPlayer.seek(
-                                Duration(seconds: intVal),
+                                Duration(seconds: startSeconds),
                               );
                             },
                           ),
@@ -126,10 +130,23 @@ class _AddSoundDialogBoxState extends State<AddSoundDialogBox> {
                             minLines: 1,
                             maxLines: 1,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'End seconds',
+                              errorText: () {
+                                if (!_isEndSecondsGreaterThanStartSeconds) {
+                                  return "End <= Start!";
+                                }
+                                return null;
+                              }(),
                             ),
+                            onChanged: (value) {
+                              final int startSeconds = _getSeconds(_startSecondsController.text);
+                              final int endSeconds = _getSeconds(value);
+                              setState(() {
+                                _isEndSecondsGreaterThanStartSeconds = (endSeconds > startSeconds);
+                              },);
+                            },
                           ),
                         ),
                       ),
@@ -149,7 +166,7 @@ class _AddSoundDialogBoxState extends State<AddSoundDialogBox> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: ElevatedButton(
-                          onPressed: _name == null ? null : _save,
+                          onPressed: (_name == null || !_isEndSecondsGreaterThanStartSeconds) ? null : _save,
                           child: Text("Save"),
                         ),
                       ),
@@ -179,6 +196,7 @@ class _AddSoundDialogBoxState extends State<AddSoundDialogBox> {
         _audioPlayerState = PlayerState.stopped;
       });
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text("$_name selected!")));
     }
@@ -243,13 +261,21 @@ class _AddSoundDialogBoxState extends State<AddSoundDialogBox> {
   }
 
   Future<void> _handlePositionChange() async {
+    final int startSeconds = _getSeconds(_startSecondsController.text);
     final int endSeconds = _getSeconds(_endSecondsController.text);
 
-    final int duration = (await widget.audioPlayer.getDuration())!.inSeconds;
-
-    if (_position!.inSeconds > (duration - endSeconds)) {
+    if (_position!.inSeconds > endSeconds && endSeconds > startSeconds) {
       await _stopPlayer();
     }
+  }
+
+  Future<void> _handleDurationChange() async {
+    int startSeconds = _getSeconds(_startSecondsController.text);
+    await widget.audioPlayer.seek(Duration(seconds: startSeconds));
+    setState(() {
+      _endSecondsController.text = _duration!.inSeconds.toString();
+      _isEndSecondsGreaterThanStartSeconds = (_duration!.inSeconds > startSeconds);
+    });
   }
 
   void _initStreams() {
@@ -263,6 +289,14 @@ class _AddSoundDialogBoxState extends State<AddSoundDialogBox> {
       duration,
     ) {
       setState(() => _duration = duration);
+      _handleDurationChange();
+    });
+    _playerCompleteSubscription = widget.audioPlayer.onPlayerComplete.listen((event) {
+      setState(() {
+        _audioPlayerState = PlayerState.stopped;
+        _position = Duration.zero;
+      });
+      _handlePositionChange();
     });
   }
 }

@@ -7,7 +7,6 @@ import 'package:sounboard/audio/audio_player_bundle.dart';
 import 'package:sounboard/audio/sound_source_wrapper.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
-import 'package:sounboard/database/sound_details.dart';
 import 'package:sounboard/database/sound_mapping_details.dart';
 
 class SoundContainerPlayer {
@@ -21,7 +20,7 @@ class SoundContainerPlayer {
   StreamSubscription? _audioPlayer1PositionSubscription;
   // ignore: unused_field
   StreamSubscription? _audioPlayer1CompleteSubscription;
-  bool _audioPlayer1IsBeingStopped = false;
+  SoundMappingDetails? _currentAudioPlayer1SoundMapping;
 
   PlayerState? _audioPlayer2State;
   // ignore: unused_field
@@ -31,11 +30,12 @@ class SoundContainerPlayer {
   StreamSubscription? _audioPlayer2PositionSubscription;
   // ignore: unused_field
   StreamSubscription? _audioPlayer2CompleteSubscription;
-  bool _audioPlayer2IsBeingStopped = false;
+  SoundMappingDetails? _currentAudioPlayer2SoundMapping;
 
   PlayerState? _transitionAudioPlayerState;
   // ignore: unused_field
   StreamSubscription? _transitionAudioPlayerStateChangeSubscription;
+  // ignore: unused_field
   Duration? _transitionAudioPlayerPosition;
   // ignore: unused_field
   StreamSubscription? _transitionAudioPlayerPositionSubscription;
@@ -50,6 +50,7 @@ class SoundContainerPlayer {
   int? _currentSoundIndex;
 
   final int _startOfSwitchInMilliseconds = 2000;
+  // ignore: unused_field
   final int _numberOfSwitchSteps = 6;
   final _stepsToPlayNextSound = List.generate(6, (i) => 2000 - (i * 400));
   bool _nextPlayerStarted = false;
@@ -155,6 +156,12 @@ class SoundContainerPlayer {
   }
 
   Future<void> _playSource(AudioPlayer player, SoundSourceWrapper soundSourceWrapper) async {
+    if (player == audioPlayerBundle.audioPlayer1) {
+      _currentAudioPlayer1SoundMapping = soundSourceWrapper.soundMappingDetails;
+    }
+    else if (player == audioPlayerBundle.audioPlayer2) {
+      _currentAudioPlayer2SoundMapping = soundSourceWrapper.soundMappingDetails;
+    }
     await player.setSource(soundSourceWrapper.source);
     if (soundSourceWrapper.soundMappingDetails != null) {
       await player.seek(Duration(seconds: soundSourceWrapper.soundMappingDetails!.startSeconds));
@@ -250,19 +257,29 @@ class SoundContainerPlayer {
     return audioPlayerBundle.audioPlayer1;
   }
 
+  Future<int?> _getPlayerEndSeconds(AudioPlayer audioPlayer) async {
+    if (audioPlayer == audioPlayerBundle.audioPlayer1) {
+      return _currentAudioPlayer1SoundMapping?.endSeconds;
+    }
+    if (audioPlayer == audioPlayerBundle.audioPlayer2) {
+      return _currentAudioPlayer2SoundMapping?.endSeconds;
+    }
+    return (await audioPlayer.getDuration())?.inSeconds;
+  }
+
   Future<void> _handlePositionChange() async {
     if (_currentPlayer == null || _currentPlayerPosition == null) {
       return;
     }
-    final currentPlayerDuration = (await _currentPlayer!.getDuration());
-    if (currentPlayerDuration == null) {
+
+    final currentPlayerEndSeconds = await _getPlayerEndSeconds(_currentPlayer!);
+    if (currentPlayerEndSeconds == null) {
       return;
     }
 
     final nextPlayer = _getNextPlayer();
-
     final millisecondsUntilEnd =
-        currentPlayerDuration.inMilliseconds -
+        (currentPlayerEndSeconds * 1000) -
         _currentPlayerPosition!.inMilliseconds;
     if (millisecondsUntilEnd > _startOfSwitchInMilliseconds) {
       return;

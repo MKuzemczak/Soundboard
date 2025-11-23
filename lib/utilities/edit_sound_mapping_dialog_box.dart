@@ -30,13 +30,18 @@ class EditSoundMappingDialogBox extends StatefulWidget {
 
 class _EditSoundMappingDialogBoxState extends State<EditSoundMappingDialogBox> {
   PlayerState _audioPlayerState;
+  // ignore: unused_field
   StreamSubscription? _positionSubscription;
+  // ignore: unused_field
   StreamSubscription? _durationSubscription;
+  // ignore: unused_field
+  StreamSubscription? _playerCompleteSubscription;
   Duration? _position;
   Duration? _duration;
 
   final TextEditingController _startSecondsController;
   final TextEditingController _endSecondsController;
+  bool _isEndSecondsGreaterThanStartSeconds;
 
   String get _durationText => _duration?.toString().split('.').first ?? '';
 
@@ -49,6 +54,7 @@ class _EditSoundMappingDialogBoxState extends State<EditSoundMappingDialogBox> {
       _endSecondsController = TextEditingController(
         text: endSeconds.toString(),
       ),
+      _isEndSecondsGreaterThanStartSeconds = (endSeconds > startSeconds),
       _audioPlayerState = PlayerState.stopped;
 
   @override
@@ -107,12 +113,13 @@ class _EditSoundMappingDialogBoxState extends State<EditSoundMappingDialogBox> {
                               hintText: 'Start seconds',
                             ),
                             onChanged: (value) async {
-                              if (value == "") {
-                                return;
-                              }
-                              final int intVal = int.parse(value);
+                              final int startSeconds = _getSeconds(value);
+                              final int endSeconds = _getSeconds(_endSecondsController.text);
+                              setState(() {
+                                _isEndSecondsGreaterThanStartSeconds = (endSeconds > startSeconds);
+                              },);
                               await widget.audioPlayer.seek(
-                                Duration(seconds: intVal),
+                                Duration(seconds: startSeconds),
                               );
                             },
                           ),
@@ -131,10 +138,23 @@ class _EditSoundMappingDialogBoxState extends State<EditSoundMappingDialogBox> {
                             minLines: 1,
                             maxLines: 1,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               hintText: 'End seconds',
+                              errorText: () {
+                                if (!_isEndSecondsGreaterThanStartSeconds) {
+                                  return "End <= Start!";
+                                }
+                                return null;
+                              }(),
                             ),
+                            onChanged: (value) {
+                              final int startSeconds = _getSeconds(_startSecondsController.text);
+                              final int endSeconds = _getSeconds(value);
+                              setState(() {
+                                _isEndSecondsGreaterThanStartSeconds = (endSeconds > startSeconds);
+                              },);
+                            },
                           ),
                         ),
                       ),
@@ -154,7 +174,7 @@ class _EditSoundMappingDialogBoxState extends State<EditSoundMappingDialogBox> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: ElevatedButton(
-                          onPressed: _save,
+                          onPressed: _isEndSecondsGreaterThanStartSeconds ? _save : null,
                           child: Text("Save"),
                         ),
                       ),
@@ -221,11 +241,10 @@ class _EditSoundMappingDialogBoxState extends State<EditSoundMappingDialogBox> {
   }
 
   Future<void> _handlePositionChange() async {
+    final int startSeconds = _getSeconds(_startSecondsController.text);
     final int endSeconds = _getSeconds(_endSecondsController.text);
 
-    final int duration = (await widget.audioPlayer.getDuration())!.inSeconds;
-
-    if (_position!.inSeconds > (duration - endSeconds)) {
+    if (_position!.inSeconds > endSeconds && endSeconds > startSeconds) {
       await _stopPlayer();
     }
   }
@@ -248,5 +267,13 @@ class _EditSoundMappingDialogBoxState extends State<EditSoundMappingDialogBox> {
       setState(() => _duration = duration);
       _handleDurationChange();
     });
+    _playerCompleteSubscription = widget.audioPlayer.onPlayerComplete.listen((event) {
+      setState(() {
+        _audioPlayerState = PlayerState.stopped;
+        _position = Duration.zero;
+      });
+      _handlePositionChange();
+    });
+
   }
 }

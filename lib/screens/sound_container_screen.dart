@@ -2,7 +2,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
-import 'package:sounboard/database/sound_details.dart';
 import 'package:sounboard/database/sound_mapping_details.dart';
 import 'package:sounboard/utilities/add_sound_dialog_box.dart';
 import 'package:sounboard/utilities/edit_sound_mapping_dialog_box.dart';
@@ -257,6 +256,7 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                                   TextButton(
                                     onPressed: () async {
                                       await _deleteSoundMapping(soundMappingDetails.soundDetails.soundId!);
+                                      // ignore: use_build_context_synchronously
                                       Navigator.pop(context);
                                     },
                                     child: const Text('Delete'),
