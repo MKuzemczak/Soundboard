@@ -54,6 +54,7 @@ class SoundContainerPlayer {
   final int _numberOfSwitchSteps = 6;
   final _stepsToPlayNextSound = List.generate(6, (i) => 2000 - (i * 400));
   bool _nextPlayerStarted = false;
+  bool _stopHitBeforePlayersStarted = false;
 
   SoundContainerPlayer({
     required this.soundContainerDetails,
@@ -104,7 +105,10 @@ class SoundContainerPlayer {
   }
 
   Future<void> play() async {
-    if (isPlaying) {
+    _stopHitBeforePlayersStarted = false;
+    final soundSourceWrapper = await _getNextSource();
+
+    if (isPlaying || soundSourceWrapper == null) {
       return;
     }
 
@@ -115,14 +119,16 @@ class SoundContainerPlayer {
 
       await _playTransition();
     }
-    final soundSourceWrapper = await _getNextSource();
-    if (soundSourceWrapper != null) {
-      if (_currentPlayer == null) {
-        _setCurrentPlayer(audioPlayerBundle.audioPlayer1);
-      }
-
-      await _startPlayer(_currentPlayer!, soundSourceWrapper, fadeInDelayMilliseconds);
+    if (_currentPlayer == null) {
+      _setCurrentPlayer(audioPlayerBundle.audioPlayer1);
     }
+
+    await _startPlayer(
+      _currentPlayer!,
+      soundSourceWrapper,
+      fadeInDelayMilliseconds,
+    );
+  
   }
 
   void pause() {}
@@ -130,6 +136,11 @@ class SoundContainerPlayer {
   Future<void> stop() async {
     if (_currentPlayer != null) {
       await _stopPlayer(_currentPlayer!);
+    }
+    if (_transitionAudioPlayerState == PlayerState.playing &&
+        (_audioPlayer1State != PlayerState.playing ||
+            _audioPlayer2State != PlayerState.playing)) {
+      _stopHitBeforePlayersStarted = true;
     }
     await audioPlayerBundle.audioPlayer1.stop();
     await audioPlayerBundle.audioPlayer2.stop();
@@ -155,16 +166,24 @@ class SoundContainerPlayer {
     await player.stop();
   }
 
-  Future<void> _playSource(AudioPlayer player, SoundSourceWrapper soundSourceWrapper) async {
+  Future<void> _playSource(
+    AudioPlayer player,
+    SoundSourceWrapper soundSourceWrapper,
+  ) async {
     if (player == audioPlayerBundle.audioPlayer1) {
       _currentAudioPlayer1SoundMapping = soundSourceWrapper.soundMappingDetails;
-    }
-    else if (player == audioPlayerBundle.audioPlayer2) {
+    } else if (player == audioPlayerBundle.audioPlayer2) {
       _currentAudioPlayer2SoundMapping = soundSourceWrapper.soundMappingDetails;
     }
     await player.setSource(soundSourceWrapper.source);
     if (soundSourceWrapper.soundMappingDetails != null) {
-      await player.seek(Duration(seconds: soundSourceWrapper.soundMappingDetails!.startSeconds));
+      await player.seek(
+        Duration(seconds: soundSourceWrapper.soundMappingDetails!.startSeconds),
+      );
+    }
+    if (_stopHitBeforePlayersStarted) {
+      _stopHitBeforePlayersStarted = false;
+      return;
     }
     await player.resume();
   }
@@ -208,20 +227,16 @@ class SoundContainerPlayer {
       soundContainerDetails.soundContainerId!,
     );
 
-    if (soundMappings.isEmpty) {
-      return SoundSourceWrapper(
-        soundMappingDetails: null,
-        source: AssetSource("sound/mia.mp3"),
-      );
+    if (soundMappings.isNotEmpty) {
+      final soundIndex = _getNextSoundIndex(soundMappings.length);
+      if (soundIndex != null) {
+        return SoundSourceWrapper(
+          soundMappingDetails: soundMappings[soundIndex],
+          source: DeviceFileSource(soundMappings[soundIndex].soundDetails.path),
+        );
+      }
     }
 
-    final soundIndex = _getNextSoundIndex(soundMappings.length);
-    if (soundIndex != null) {
-      return SoundSourceWrapper(
-        soundMappingDetails: soundMappings[soundIndex],
-        source: DeviceFileSource(soundMappings[soundIndex].soundDetails.path),
-      );
-    }
     return null;
   }
 
