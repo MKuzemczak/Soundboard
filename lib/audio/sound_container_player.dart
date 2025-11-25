@@ -128,7 +128,6 @@ class SoundContainerPlayer {
       soundSourceWrapper,
       fadeInDelayMilliseconds,
     );
-  
   }
 
   void pause() {}
@@ -242,11 +241,17 @@ class SoundContainerPlayer {
 
   int? _getNextSoundIndex(int soundsListSize) {
     int? result;
+    if (soundsListSize == 0) {
+      return null;
+    }
     if (soundContainerDetails.shuffle) {
       final rng = Random();
       result = rng.nextInt(soundsListSize);
-      while (result == _currentSoundIndex) {
-        result = rng.nextInt(soundsListSize);
+
+      if (soundsListSize > 1) {
+        while (result == _currentSoundIndex) {
+          result = rng.nextInt(soundsListSize);
+        }
       }
     } else {
       if (_currentSoundIndex == soundsListSize - 1) {

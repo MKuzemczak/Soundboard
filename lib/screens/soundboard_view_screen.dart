@@ -186,6 +186,7 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
             child: const Text('Delete'),
             onPressed: () async {
               await _deleteSoundCountainer(soundContainerDetails);
+              // ignore: use_build_context_synchronously
               Navigator.pop(context);
             },
           ),

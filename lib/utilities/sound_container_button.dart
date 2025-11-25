@@ -32,9 +32,6 @@ class _SoundContainerButtonState extends State<SoundContainerButton> {
         return;
       }
       isP = widget.soundContainerPlayer.isPlaying;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("1 widget.soundContainerPlayer.isPlaying: ${widget.soundContainerPlayer.isPlaying}")));
     });
   }
 
@@ -62,9 +59,6 @@ class _SoundContainerButtonState extends State<SoundContainerButton> {
       onPressed: () async {
         if (widget.soundContainerPlayer.isPlaying) {
           await widget.soundContainerPlayer.stop();
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("2 widget.soundContainerPlayer.isPlaying: ${widget.soundContainerPlayer.isPlaying}")));
         } else {
           widget.soundContainerPlayer.play();
           widget.onStartedPlaying();
