@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class SoundContainerDetails {
   int? soundContainerId;
   String name;
@@ -6,6 +8,7 @@ class SoundContainerDetails {
   bool transitions;
   bool fadeIn;
   bool fadeOut;
+  Color? color;
 
   SoundContainerDetails({
     this.soundContainerId,
@@ -15,6 +18,7 @@ class SoundContainerDetails {
     required this.transitions,
     required this.fadeIn,
     required this.fadeOut,
+    required this.color,
   });
 
   SoundContainerDetails clone() {
@@ -26,6 +30,7 @@ class SoundContainerDetails {
       transitions: transitions,
       fadeIn: fadeIn,
       fadeOut: fadeOut,
+      color: color,
     );
   }
 
@@ -41,6 +46,9 @@ class SoundContainerDetails {
     if (soundContainerId != null) {
       map["soundContainerId"] = soundContainerId.toString();
     }
+    if (color != null) {
+      map["color"] = color!.toARGB32().toRadixString(16);
+    }
     return map;
   }
 
@@ -53,6 +61,7 @@ class SoundContainerDetails {
       transitions: map["transitions"] == 1,
       fadeIn: map["fadeIn"] == 1,
       fadeOut: map["fadeOut"] == 1,
+      color: (map["color"] == null ? null : Color(int.parse(map["color"], radix: 16))),
     );
   }
 
@@ -63,8 +72,9 @@ class SoundContainerDetails {
         "name: $name, "
         "shuffle: $shuffle, "
         "loop: $loop, "
-        "transitions: $transitions"
-        "fadeIn: $fadeIn"
-        "fadeOut: $fadeOut}";
+        "transitions: $transitions, "
+        "fadeIn: $fadeIn, "
+        "fadeOut: $fadeOut, "
+        "color: $color}";
   }
 }

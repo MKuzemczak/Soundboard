@@ -49,6 +49,7 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
               //           transitions: true,
               //           fadeIn: true,
               //           fadeOut: true,
+              //           color: Color(0xffffffff),
               //         ),
               //       );
               //       await dbHelper.insertSoundboardToSoundContainerMapping(
@@ -81,6 +82,15 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
               //     ),
               //         ),
               //   child: Text("audioplayers"),
+              // ),
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     await DbHelper().insertColumn();
+              //     setState(() {
+              //       _loadFutures();
+              //     });
+              //   },
+              //   child: Text("Add column"),
               // ),
               
             ],

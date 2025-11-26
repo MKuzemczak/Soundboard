@@ -118,6 +118,8 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
           initialTransitionsSwitchState: true,
           initialFadeInSwitchState: true,
           initialFadeOutSwitchState: true,
+          initialColor: Color.fromARGB(255, 50, 75, 47),
+          isUpdate: false,
         );
       },
     );
@@ -163,7 +165,8 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                     soundContainerId: soundContainerDetails.soundContainerId!,
                     onEdit: () => setState(() {
                       _loadFutures();
-                    }),
+                    },),
+                    soundboardId: widget.soundboardDetails.soundboardId!,
                   ),
                 ),
               );

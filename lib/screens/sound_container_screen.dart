@@ -3,18 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
 import 'package:sounboard/database/sound_mapping_details.dart';
+import 'package:sounboard/utilities/add_sound_container_dialog_box.dart';
 import 'package:sounboard/utilities/add_sound_dialog_box.dart';
 import 'package:sounboard/utilities/edit_sound_mapping_dialog_box.dart';
 import 'package:sounboard/utilities/sound_tile.dart';
 
 class SoundContainerScreen extends StatefulWidget {
   final int soundContainerId;
+  final int soundboardId;
   final VoidCallback onEdit;
 
   const SoundContainerScreen({
     super.key,
     required this.soundContainerId,
     required this.onEdit,
+    required this.soundboardId,
   });
 
   @override
@@ -51,19 +54,27 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
         }
 
         final soundContainerDetails = snapshot.data!;
+        final appBarItemColor = _getAppBarItemColor(soundContainerDetails);
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(soundContainerDetails.name),
-            backgroundColor: Color.fromARGB(255, 58, 86, 67),
+            iconTheme: IconThemeData(color: appBarItemColor),
+            title: Text(
+              soundContainerDetails.name,
+              style: TextStyle(
+                color: appBarItemColor,
+              ),
+            ),
+            backgroundColor: soundContainerDetails.color,
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () async {
-                    await _updateSoundContainer();
+                    await _updateSoundContainer(soundContainerDetails);
                   },
+                  color: appBarItemColor,
                 ),
               ),
             ],
@@ -251,11 +262,17 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
                             onRemoveFunc: (context) => showDialog(
                               context: context,
                               builder: (BuildContext context) => AlertDialog(
-                                content: Text('Delete ${soundMappingDetails.soundDetails.name}?'),
+                                content: Text(
+                                  'Delete ${soundMappingDetails.soundDetails.name}?',
+                                ),
                                 actions: <Widget>[
                                   TextButton(
                                     onPressed: () async {
-                                      await _deleteSoundMapping(soundMappingDetails.soundDetails.soundId!);
+                                      await _deleteSoundMapping(
+                                        soundMappingDetails
+                                            .soundDetails
+                                            .soundId!,
+                                      );
                                       // ignore: use_build_context_synchronously
                                       Navigator.pop(context);
                                     },
@@ -286,8 +303,64 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
     );
   }
 
-  Future<void> _updateSoundContainer() async {
-    throw UnimplementedError();
+  Color _getNegativeColor(Color color) {
+    int a = (255 * color.a).toInt();
+    int r = (255 * (1.0 - color.r)).toInt();
+    int g = (255 * (1.0 - color.g)).toInt();
+    int b = (255 * (1.0 - color.b)).toInt();
+    return Color.fromARGB(a, r, g, b);
+  }
+
+  Color _getAppBarItemColor(SoundContainerDetails soundContainerDetails) {
+    if (soundContainerDetails.color == null) {
+      return Color.fromARGB(255, 71, 120, 66);
+    }
+
+    var negativeColor = HSLColor.fromColor(
+      _getNegativeColor(soundContainerDetails.color!),
+    );
+    final luminance = soundContainerDetails.color!.computeLuminance();
+    if (luminance < 0.2) {
+      return negativeColor
+          .withLightness(
+            (1.0 - negativeColor.lightness) * 0.5 + negativeColor.lightness,
+          )
+          .toColor();
+    }
+
+    return negativeColor.withLightness(negativeColor.lightness * 0.3).toColor();
+  }
+
+  Future<void> _updateSoundContainer(
+    SoundContainerDetails soundContainerDetails,
+  ) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AddSoundContainerDialogBox(
+          soundboardId: widget.soundboardId,
+          onSave: () {
+            Navigator.pop(context);
+            setState(() {
+              _loadFutures();
+            });
+            widget.onEdit();
+          },
+          onCancel: () => Navigator.pop(context),
+          initialShuffleSwitchState: soundContainerDetails.shuffle,
+          initialLoopSwitchState: soundContainerDetails.loop,
+          initialTransitionsSwitchState: soundContainerDetails.transitions,
+          initialFadeInSwitchState: soundContainerDetails.fadeIn,
+          initialFadeOutSwitchState: soundContainerDetails.fadeOut,
+          initialColor: soundContainerDetails.color == null
+              ? Color.fromARGB(255, 255, 255, 255)
+              : soundContainerDetails.color!,
+          isUpdate: true,
+          soundContainerId: soundContainerDetails.soundContainerId!,
+          initialName: soundContainerDetails.name,
+        );
+      },
+    );
   }
 
   Future<void> _toggleShuffle(
