@@ -176,6 +176,22 @@ class SoundContainerPlayer {
     }
     await player.setSource(soundSourceWrapper.source);
     if (soundSourceWrapper.soundMappingDetails != null) {
+      // final soundLength =
+      //     soundSourceWrapper.soundMappingDetails!.endSeconds -
+      //     soundSourceWrapper.soundMappingDetails!.startSeconds;
+      // if (soundLength > 1800) {
+      //   final rng = Random();
+      //   final randomizedStartSeconds =
+      //       rng.nextInt((soundLength / 2).toInt()) +
+      //       soundSourceWrapper.soundMappingDetails!.startSeconds;
+      //   await player.seek(Duration(seconds: randomizedStartSeconds));
+      // } else {
+      //   await player.seek(
+      //     Duration(
+      //       seconds: soundSourceWrapper.soundMappingDetails!.startSeconds,
+      //     ),
+      //   );
+      // }
       await player.seek(
         Duration(seconds: soundSourceWrapper.soundMappingDetails!.startSeconds),
       );
