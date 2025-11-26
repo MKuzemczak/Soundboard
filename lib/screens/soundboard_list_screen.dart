@@ -33,55 +33,55 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
         children: [
           Row(
             children: [
-              ElevatedButton(
-                onPressed: () async {
-                  final dbHelper = DbHelper();
-                  final sb = await dbHelper.insertSoundboard(
-                    SoundboardDetails(name: "DND"),
-                  );
-                  List<SoundContainerDetails> soundContainers = [];
-                  for (var i = 0; i < 13; i++) {
-                    final sc = await dbHelper.insertSoundContainer(
-                      SoundContainerDetails(
-                        name: "sc$i",
-                        shuffle: false,
-                        loop: true,
-                        transitions: true,
-                        fadeIn: true,
-                        fadeOut: true,
-                      ),
-                    );
-                    await dbHelper.insertSoundboardToSoundContainerMapping(
-                      soundboardId: sb.soundboardId!,
-                      soundContainerId: sc.soundContainerId!
-                    );
-                    soundContainers.add(sc);
-                  }
-                  setState(() {
-                    _loadFutures();
-                  });
-                },
-                child: Text("Insert DB data"),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  await DbHelper().deleteDb();
-                  setState(() {
-                    _loadFutures();
-                  });
-                },
-                child: Text("Delete database"),
-              ),
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     final dbHelper = DbHelper();
+              //     final sb = await dbHelper.insertSoundboard(
+              //       SoundboardDetails(name: "DND"),
+              //     );
+              //     List<SoundContainerDetails> soundContainers = [];
+              //     for (var i = 0; i < 13; i++) {
+              //       final sc = await dbHelper.insertSoundContainer(
+              //         SoundContainerDetails(
+              //           name: "sc$i",
+              //           shuffle: false,
+              //           loop: true,
+              //           transitions: true,
+              //           fadeIn: true,
+              //           fadeOut: true,
+              //         ),
+              //       );
+              //       await dbHelper.insertSoundboardToSoundContainerMapping(
+              //         soundboardId: sb.soundboardId!,
+              //         soundContainerId: sc.soundContainerId!
+              //       );
+              //       soundContainers.add(sc);
+              //     }
+              //     setState(() {
+              //       _loadFutures();
+              //     });
+              //   },
+              //   child: Text("Insert DB data"),
+              // ),
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     await DbHelper().deleteDb();
+              //     setState(() {
+              //       _loadFutures();
+              //     });
+              //   },
+              //   child: Text("Delete database"),
+              // ),
               
-              ElevatedButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AudioplayersTest(),
-                  ),
-                      ),
-                child: Text("audioplayers"),
-              ),
+              // ElevatedButton(
+              //   onPressed: () => Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (context) => AudioplayersTest(),
+              //     ),
+              //         ),
+              //   child: Text("audioplayers"),
+              // ),
               
             ],
           ),

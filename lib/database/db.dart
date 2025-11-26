@@ -333,10 +333,12 @@ class DbHelper {
       whereArgs: soundContainerIds,
     );
 
-    return List.generate(
+    final result = List.generate(
       soundContainersMaps.length,
       (i) => SoundContainerDetails.fromMap(soundContainersMaps[i]),
     );
+    result.sort((a, b) => a.name.compareTo(b.name));
+    return result;
   }
 
   Future<List<SoundboardDetails>> getSoundboards() async {
