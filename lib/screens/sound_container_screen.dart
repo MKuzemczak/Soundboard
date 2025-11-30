@@ -1,9 +1,12 @@
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
+import 'package:sounboard/database/sound_details.dart';
 import 'package:sounboard/database/sound_mapping_details.dart';
 import 'package:sounboard/utilities/add_sound_container_dialog_box.dart';
 import 'package:sounboard/utilities/add_sound_dialog_box.dart';
@@ -305,10 +308,34 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
               ],
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => _addSound(),
-            child: Icon(Icons.add),
+          floatingActionButton: SpeedDial(
+            icon: Icons.add,
+            activeIcon: Icons.close,
+            children: [
+              SpeedDialChild(
+                child: const Icon(Icons.add),
+                // backgroundColor: Colors.red,
+                // foregroundColor: Colors.white,
+                label: "Add single",
+                onTap: () => _addSound(),
+                // onLongPress: () => debugPrint('FIRST CHILD LONG PRESS'),
+              ),
+              SpeedDialChild(
+                child: const Icon(Icons.add),
+                // backgroundColor: Colors.red,
+                // foregroundColor: Colors.white,
+                label: "Add multiple",
+                onTap: () => _addMultipleSounds(),
+                // onLongPress: () => debugPrint('FIRST CHILD LONG PRESS'),
+              ),
+
+
+            ],
           ),
+          // floatingActionButton: FloatingActionButton(
+          //   onPressed: () => _addSound(),
+          //   child: Icon(Icons.add),
+          // ),
         );
       },
     );
@@ -432,6 +459,41 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
       soundContainerId: widget.soundContainerId,
       soundId: soundId,
     );
+    setState(() {
+      _loadFutures();
+    });
+    widget.onEdit();
+  }
+
+  Future<void> _addMultipleSounds() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+
+    if (result == null) {
+      return;
+    }
+
+    for (var file in result.files) {
+      final uri = file.path!;
+      final name = uri.split("/").last.split("\\").last;
+
+      final dbHelper = DbHelper();
+      final soundDetails = await dbHelper.insertSound(
+        SoundDetails(name: name, path: uri),
+      );
+      AudioPlayer tmpPlayer = AudioPlayer();
+      await tmpPlayer.setSource(DeviceFileSource(uri));
+      final duration = await tmpPlayer.getDuration();
+      final durationSeconds = duration == null ? 0 : duration.inSeconds;
+      await dbHelper.insertSoundContainerToSoundMapping(
+        widget.soundContainerId,
+        SoundMappingDetails(
+          soundDetails: soundDetails,
+          startSeconds: 0,
+          endSeconds: durationSeconds,
+        ),
+      );
+    }
+    
     setState(() {
       _loadFutures();
     });
