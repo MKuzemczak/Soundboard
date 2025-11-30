@@ -1,4 +1,6 @@
 // import 'package:audioplayers/audioplayers.dart';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:sounboard/audio/audio_players_manager.dart';
 import 'package:sounboard/database/db.dart';
@@ -43,55 +45,64 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
         title: Text(widget.soundboardDetails.name),
         backgroundColor: Color.fromARGB(255, 58, 86, 67),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: FutureBuilder(
-              future: _soundContainersFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Text('No sound containers found.'),
-                  );
-                }
-
-                final soundContainers = snapshot.data!;
-
-                _audioPlayersManager.rebuildAudioPlayersMap(soundContainers);
-
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: StretchWrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    autoStretch: AutoStretch.all,
-                    children: List.generate(
-                      soundContainers.length,
-                      (i) => SoundContainerButton(
-                        key: Key(soundContainers[i].name),
-                        soundContainerDetails: soundContainers[i],
-                        soundContainerPlayer: _audioPlayersManager
-                            .getSoundContainerPlayerForSoundConainer(
-                              soundContainers[i].soundContainerId!,
-                            ),
-                        onLongPress: () => _showSoundContainerLongPressDialog(
-                          soundContainers[i],
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            fit: BoxFit.cover,
+            opacity: 0.2,
+            image: _getBackgroundAssetImage(),
+          )
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: FutureBuilder(
+                future: _soundContainersFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text('No sound containers found.'),
+                    );
+                  }
+        
+                  final soundContainers = snapshot.data!;
+        
+                  _audioPlayersManager.rebuildAudioPlayersMap(soundContainers);
+        
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: StretchWrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      autoStretch: AutoStretch.all,
+                      children: List.generate(
+                        soundContainers.length,
+                        (i) => SoundContainerButton(
+                          key: Key(soundContainers[i].name),
+                          soundContainerDetails: soundContainers[i],
+                          soundContainerPlayer: _audioPlayersManager
+                              .getSoundContainerPlayerForSoundConainer(
+                                soundContainers[i].soundContainerId!,
+                              ),
+                          onLongPress: () => _showSoundContainerLongPressDialog(
+                            soundContainers[i],
+                          ),
+                          onStartedPlaying: () {
+                            _stopPlayersOtherThan(soundContainers[i]);
+                          },
                         ),
-                        onStartedPlaying: () {
-                          _stopPlayersOtherThan(soundContainers[i]);
-                        },
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addSoundContainer(),
@@ -206,5 +217,11 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
     _audioPlayersManager.stopAudioPlayersOtherThan(
       soundContainerDetails.soundContainerId!,
     );
+  }
+
+  AssetImage _getBackgroundAssetImage() {
+    final rng = Random();
+    final imgId = rng.nextInt(9);
+    return AssetImage("assets/images/bg-$imgId.jpg");
   }
 }
