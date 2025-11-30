@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
 import 'package:sounboard/database/sound_containter_details.dart';
@@ -29,111 +31,127 @@ class _SoundboardListScreenState extends State<SoundboardListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Row(
-            children: [
-              // ElevatedButton(
-              //   onPressed: () async {
-              //     final dbHelper = DbHelper();
-              //     final sb = await dbHelper.insertSoundboard(
-              //       SoundboardDetails(name: "DND"),
-              //     );
-              //     List<SoundContainerDetails> soundContainers = [];
-              //     for (var i = 0; i < 13; i++) {
-              //       final sc = await dbHelper.insertSoundContainer(
-              //         SoundContainerDetails(
-              //           name: "sc$i",
-              //           shuffle: false,
-              //           loop: true,
-              //           transitions: true,
-              //           fadeIn: true,
-              //           fadeOut: true,
-              //           color: Color(0xffffffff),
-              //         ),
-              //       );
-              //       await dbHelper.insertSoundboardToSoundContainerMapping(
-              //         soundboardId: sb.soundboardId!,
-              //         soundContainerId: sc.soundContainerId!
-              //       );
-              //       soundContainers.add(sc);
-              //     }
-              //     setState(() {
-              //       _loadFutures();
-              //     });
-              //   },
-              //   child: Text("Insert DB data"),
-              // ),
-              // ElevatedButton(
-              //   onPressed: () async {
-              //     await DbHelper().deleteDb();
-              //     setState(() {
-              //       _loadFutures();
-              //     });
-              //   },
-              //   child: Text("Delete database"),
-              // ),
-              
-              // ElevatedButton(
-              //   onPressed: () => Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //       builder: (context) => AudioplayersTest(),
-              //     ),
-              //         ),
-              //   child: Text("audioplayers"),
-              // ),
-              // ElevatedButton(
-              //   onPressed: () async {
-              //     await DbHelper().insertColumn();
-              //     setState(() {
-              //       _loadFutures();
-              //     });
-              //   },
-              //   child: Text("Add column"),
-              // ),
-              
-            ],
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            fit: BoxFit.cover,
+            opacity: 0.2,
+            image: _getBackgroundAssetImage(),
           ),
-          Expanded(
-            child: FutureBuilder(
-              future: _soundboardsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No soundboards found.'));
-                }
-
-                final soundboards = snapshot.data!;
-
-                return ListView.builder(
-                  itemCount: soundboards.length,
-                  itemBuilder: (context, index) {
-                    final soundboardDetails = soundboards[index];
-                    return SoundboardTile(
-                      soundboardDetails: soundboardDetails,
-                      onEnterFunc: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SoundboardViewScreen(
-                            soundboardDetails: soundboardDetails,
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // ElevatedButton(
+                //   onPressed: () async {
+                //     final dbHelper = DbHelper();
+                //     final sb = await dbHelper.insertSoundboard(
+                //       SoundboardDetails(name: "DND"),
+                //     );
+                //     List<SoundContainerDetails> soundContainers = [];
+                //     for (var i = 0; i < 13; i++) {
+                //       final sc = await dbHelper.insertSoundContainer(
+                //         SoundContainerDetails(
+                //           name: "sc$i",
+                //           shuffle: false,
+                //           loop: true,
+                //           transitions: true,
+                //           fadeIn: true,
+                //           fadeOut: true,
+                //           color: Color(0xffffffff),
+                //         ),
+                //       );
+                //       await dbHelper.insertSoundboardToSoundContainerMapping(
+                //         soundboardId: sb.soundboardId!,
+                //         soundContainerId: sc.soundContainerId!
+                //       );
+                //       soundContainers.add(sc);
+                //     }
+                //     setState(() {
+                //       _loadFutures();
+                //     });
+                //   },
+                //   child: Text("Insert DB data"),
+                // ),
+                // ElevatedButton(
+                //   onPressed: () async {
+                //     await DbHelper().deleteDb();
+                //     setState(() {
+                //       _loadFutures();
+                //     });
+                //   },
+                //   child: Text("Delete database"),
+                // ),
+                
+                // ElevatedButton(
+                //   onPressed: () => Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //       builder: (context) => AudioplayersTest(),
+                //     ),
+                //         ),
+                //   child: Text("audioplayers"),
+                // ),
+                // ElevatedButton(
+                //   onPressed: () async {
+                //     await DbHelper().insertColumn();
+                //     setState(() {
+                //       _loadFutures();
+                //     });
+                //   },
+                //   child: Text("Add column"),
+                // ),
+                
+              ],
+            ),
+            Expanded(
+              child: FutureBuilder(
+                future: _soundboardsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No soundboards found.'));
+                  }
+        
+                  final soundboards = snapshot.data!;
+        
+                  return ListView.builder(
+                    itemCount: soundboards.length,
+                    itemBuilder: (context, index) {
+                      final soundboardDetails = soundboards[index];
+                      return SoundboardTile(
+                        soundboardDetails: soundboardDetails,
+                        onEnterFunc: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SoundboardViewScreen(
+                              soundboardDetails: soundboardDetails,
+                            ),
                           ),
                         ),
-                      ),
-                      onRemoveFunc: (context) {
-                        throw UnimplementedError();
-                      },
-                    );
-                  },
-                );
-              },
+                        onRemoveFunc: (context) {
+                          throw UnimplementedError();
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+  
+  AssetImage _getBackgroundAssetImage() {
+    final rng = Random();
+    final imgId = rng.nextInt(9);
+    return AssetImage("assets/images/bg-$imgId.jpg");
+  }
+
 }

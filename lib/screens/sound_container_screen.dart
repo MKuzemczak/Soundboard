@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/database/db.dart';
@@ -79,220 +81,229 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
               ),
             ],
           ),
-          body: Column(
-            children: [
-              Row(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 12.0,
-                          right: 12.0,
-                          top: 8.0,
+          body: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.cover,
+                opacity: 0.2,
+                image: _getBackgroundAssetImage(),
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 12.0,
+                            right: 12.0,
+                            top: 8.0,
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.shuffle,
+                              color: (soundContainerDetails.shuffle
+                                  ? const Color.fromARGB(255, 175, 113, 227)
+                                  : const Color.fromRGBO(100, 100, 100, 1.0)),
+                            ),
+                            onPressed: () async =>
+                                await _toggleShuffle(soundContainerDetails),
+                          ),
                         ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.shuffle,
+                        Text(
+                          "Shuffle",
+                          style: TextStyle(
                             color: (soundContainerDetails.shuffle
                                 ? const Color.fromARGB(255, 175, 113, 227)
                                 : const Color.fromRGBO(100, 100, 100, 1.0)),
                           ),
-                          onPressed: () async =>
-                              await _toggleShuffle(soundContainerDetails),
                         ),
-                      ),
-                      Text(
-                        "Shuffle",
-                        style: TextStyle(
-                          color: (soundContainerDetails.shuffle
-                              ? const Color.fromARGB(255, 175, 113, 227)
-                              : const Color.fromRGBO(100, 100, 100, 1.0)),
+                      ],
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 12.0,
+                            right: 12.0,
+                            top: 8.0,
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.loop,
+                              color: (soundContainerDetails.loop
+                                  ? const Color.fromARGB(255, 175, 113, 227)
+                                  : const Color.fromRGBO(100, 100, 100, 1.0)),
+                            ),
+                            onPressed: () async =>
+                                await _toggleLoop(soundContainerDetails),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 12.0,
-                          right: 12.0,
-                          top: 8.0,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.loop,
+                        Text(
+                          "Loop",
+                          style: TextStyle(
                             color: (soundContainerDetails.loop
                                 ? const Color.fromARGB(255, 175, 113, 227)
                                 : const Color.fromRGBO(100, 100, 100, 1.0)),
                           ),
-                          onPressed: () async =>
-                              await _toggleLoop(soundContainerDetails),
                         ),
-                      ),
-                      Text(
-                        "Loop",
-                        style: TextStyle(
-                          color: (soundContainerDetails.loop
-                              ? const Color.fromARGB(255, 175, 113, 227)
-                              : const Color.fromRGBO(100, 100, 100, 1.0)),
+                      ],
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 15.0,
+                            right: 15.0,
+                            top: 8.0,
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.waves,
+                              color: (soundContainerDetails.transitions
+                                  ? const Color.fromARGB(255, 175, 113, 227)
+                                  : const Color.fromRGBO(100, 100, 100, 1.0)),
+                            ),
+                            onPressed: () async =>
+                                await _toggleTransitions(soundContainerDetails),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 15.0,
-                          right: 15.0,
-                          top: 8.0,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.waves,
+                        Text(
+                          "Transitions",
+                          style: TextStyle(
                             color: (soundContainerDetails.transitions
                                 ? const Color.fromARGB(255, 175, 113, 227)
                                 : const Color.fromRGBO(100, 100, 100, 1.0)),
                           ),
-                          onPressed: () async =>
-                              await _toggleTransitions(soundContainerDetails),
                         ),
-                      ),
-                      Text(
-                        "Transitions",
-                        style: TextStyle(
-                          color: (soundContainerDetails.transitions
-                              ? const Color.fromARGB(255, 175, 113, 227)
-                              : const Color.fromRGBO(100, 100, 100, 1.0)),
+                      ],
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 12.0,
+                            right: 12.0,
+                            top: 8.0,
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.trending_up,
+                              color: (soundContainerDetails.fadeIn
+                                  ? const Color.fromARGB(255, 175, 113, 227)
+                                  : const Color.fromRGBO(100, 100, 100, 1.0)),
+                            ),
+                            onPressed: () async =>
+                                await _toggleFadeIn(soundContainerDetails),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 12.0,
-                          right: 12.0,
-                          top: 8.0,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.trending_up,
+                        Text(
+                          "Fade in",
+                          style: TextStyle(
                             color: (soundContainerDetails.fadeIn
                                 ? const Color.fromARGB(255, 175, 113, 227)
                                 : const Color.fromRGBO(100, 100, 100, 1.0)),
                           ),
-                          onPressed: () async =>
-                              await _toggleFadeIn(soundContainerDetails),
                         ),
-                      ),
-                      Text(
-                        "Fade in",
-                        style: TextStyle(
-                          color: (soundContainerDetails.fadeIn
-                              ? const Color.fromARGB(255, 175, 113, 227)
-                              : const Color.fromRGBO(100, 100, 100, 1.0)),
+                      ],
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 12.0,
+                            right: 12.0,
+                            top: 8.0,
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.trending_down,
+                              color: (soundContainerDetails.fadeOut
+                                  ? const Color.fromARGB(255, 175, 113, 227)
+                                  : const Color.fromRGBO(100, 100, 100, 1.0)),
+                            ),
+                            onPressed: () async =>
+                                await _toggleFadeOut(soundContainerDetails),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 12.0,
-                          right: 12.0,
-                          top: 8.0,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.trending_down,
+                        Text(
+                          "Fade out",
+                          style: TextStyle(
                             color: (soundContainerDetails.fadeOut
                                 ? const Color.fromARGB(255, 175, 113, 227)
                                 : const Color.fromRGBO(100, 100, 100, 1.0)),
                           ),
-                          onPressed: () async =>
-                              await _toggleFadeOut(soundContainerDetails),
                         ),
-                      ),
-                      Text(
-                        "Fade out",
-                        style: TextStyle(
-                          color: (soundContainerDetails.fadeOut
-                              ? const Color.fromARGB(255, 175, 113, 227)
-                              : const Color.fromRGBO(100, 100, 100, 1.0)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Expanded(
-                child: FutureBuilder(
-                  future: _soundsFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No sounds found.'));
-                    }
-
-                    final soundMappings = snapshot.data!;
-
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ListView.builder(
-                        itemCount: soundMappings.length,
-                        itemBuilder: (context, index) {
-                          final soundMappingDetails = soundMappings[index];
-
-                          return SoundTile(
-                            soundDetails: soundMappingDetails.soundDetails,
-                            onTapFunc: () => _editSound(soundMappingDetails),
-                            onRemoveFunc: (context) => showDialog(
-                              context: context,
-                              builder: (BuildContext context) => AlertDialog(
-                                content: Text(
-                                  'Delete ${soundMappingDetails.soundDetails.name}?',
-                                ),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () async {
-                                      await _deleteSoundMapping(
-                                        soundMappingDetails
-                                            .soundDetails
-                                            .soundId!,
-                                      );
-                                      // ignore: use_build_context_synchronously
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('Delete'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('Cancel'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                Expanded(
+                  child: FutureBuilder(
+                    future: _soundsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No sounds found.'));
+                      }
+            
+                      final soundMappings = snapshot.data!;
+            
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListView.builder(
+                          itemCount: soundMappings.length,
+                          itemBuilder: (context, index) {
+                            final soundMappingDetails = soundMappings[index];
+            
+                            return SoundTile(
+                              soundDetails: soundMappingDetails.soundDetails,
+                              onTapFunc: () => _editSound(soundMappingDetails),
+                              onRemoveFunc: (context) => showDialog(
+                                context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                  content: Text(
+                                    'Delete ${soundMappingDetails.soundDetails.name}?',
+                                  ),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () async {
+                                        await _deleteSoundMapping(
+                                          soundMappingDetails
+                                              .soundDetails
+                                              .soundId!,
+                                        );
+                                        // ignore: use_build_context_synchronously
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('Delete'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Cancel'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () => _addSound(),
@@ -478,4 +489,11 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
       audioPlayer.stop();
     });
   }
+  
+  AssetImage _getBackgroundAssetImage() {
+    final rng = Random();
+    final imgId = rng.nextInt(9);
+    return AssetImage("assets/images/bg-$imgId.jpg");
+  }
+
 }

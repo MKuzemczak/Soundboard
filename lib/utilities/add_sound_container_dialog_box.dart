@@ -5,6 +5,7 @@ import 'package:sounboard/database/sound_containter_details.dart';
 
 class AddSoundContainerDialogBox extends StatefulWidget {
   final TextEditingController _nameController;
+  final TextEditingController _sectionController;
   final int soundboardId;
   final bool initialShuffleSwitchState;
   final bool initialLoopSwitchState;
@@ -31,7 +32,9 @@ class AddSoundContainerDialogBox extends StatefulWidget {
     required this.isUpdate,
     this.soundContainerId,
     String initialName = "",
-  }) : _nameController = TextEditingController(text: initialName);
+    String initialSection = "",
+  }) : _nameController = TextEditingController(text: initialName),
+       _sectionController = TextEditingController(text: initialSection);
 
   @override
   _AddSoundContainerDialogBoxState createState() =>
@@ -72,7 +75,7 @@ class _AddSoundContainerDialogBoxState
         builder: (BuildContext context, StateSetter setState) {
           return SizedBox(
             width: MediaQuery.sizeOf(context).width * 0.7,
-            height: MediaQuery.sizeOf(context).height * 0.5,
+            height: MediaQuery.sizeOf(context).height * 0.6,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -271,6 +274,18 @@ class _AddSoundContainerDialogBoxState
                     ),
                   ),
                   Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: TextField(
+                      controller: widget._sectionController,
+                      minLines: 1,
+                      maxLines: 1,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Section',
+                      ),
+                    ),
+                  ),
+                  Padding(
                     padding: const EdgeInsets.only(top: 16.0),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -286,6 +301,7 @@ class _AddSoundContainerDialogBoxState
                             ),
                             onPressed: () {
                               widget._nameController.clear();
+                              widget._sectionController.clear();
                               widget.onCancel();
                             },
                             child: Text('Cancel'),
@@ -373,6 +389,7 @@ class _AddSoundContainerDialogBoxState
       fadeIn: fadeInSwitchState,
       fadeOut: fadeOutSwitchState,
       color: _currentColor,
+      section: widget._sectionController.text,
     );
 
     final dbHelper = DbHelper();
@@ -380,7 +397,9 @@ class _AddSoundContainerDialogBoxState
       soundContainerDetails.soundContainerId = widget.soundContainerId;
       await DbHelper().updateSoundContainer(soundContainerDetails);
     } else {
-      final inserted = await dbHelper.insertSoundContainer(soundContainerDetails);
+      final inserted = await dbHelper.insertSoundContainer(
+        soundContainerDetails,
+      );
       await dbHelper.insertSoundboardToSoundContainerMapping(
         soundboardId: widget.soundboardId,
         soundContainerId: inserted.soundContainerId!,

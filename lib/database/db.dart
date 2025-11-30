@@ -58,7 +58,8 @@ class DbHelper {
           "    transitions BIT NOT NULL,"
           "    fadeIn BIT NOT NULL,"
           "    fadeOut BIT NOT NULL,"
-          "    color TEXT);",
+          "    color TEXT,"
+          "    section TEXT);",
         );
         await db.execute(
           "CREATE TABLE IF NOT EXISTS $soundContainersToSoundsTableName ("
@@ -472,7 +473,7 @@ class DbHelper {
   Future<void> insertColumn() async {
     final db = await database;
     await db.execute("ALTER TABLE $soundContainersTableName ADD "
-      "COLUMN color TEXT;");
+      "COLUMN section TEXT;");
   }
 
 }

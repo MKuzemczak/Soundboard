@@ -44,6 +44,15 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
       appBar: AppBar(
         title: Text(widget.soundboardDetails.name),
         backgroundColor: Color.fromARGB(255, 58, 86, 67),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => _addSoundContainer(),
+            ),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -51,62 +60,41 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
             fit: BoxFit.cover,
             opacity: 0.2,
             image: _getBackgroundAssetImage(),
-          )
+          ),
         ),
         child: Column(
           children: [
             Expanded(
-              child: FutureBuilder(
-                future: _soundContainersFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                      child: Text('No sound containers found.'),
-                    );
-                  }
-        
-                  final soundContainers = snapshot.data!;
-        
-                  _audioPlayersManager.rebuildAudioPlayersMap(soundContainers);
-        
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: StretchWrap(
-                      spacing: 8.0,
-                      runSpacing: 8.0,
-                      autoStretch: AutoStretch.all,
-                      children: List.generate(
-                        soundContainers.length,
-                        (i) => SoundContainerButton(
-                          key: Key(soundContainers[i].name),
-                          soundContainerDetails: soundContainers[i],
-                          soundContainerPlayer: _audioPlayersManager
-                              .getSoundContainerPlayerForSoundConainer(
-                                soundContainers[i].soundContainerId!,
-                              ),
-                          onLongPress: () => _showSoundContainerLongPressDialog(
-                            soundContainers[i],
-                          ),
-                          onStartedPlaying: () {
-                            _stopPlayersOtherThan(soundContainers[i]);
-                          },
-                        ),
+              child: SingleChildScrollView(
+                child: FutureBuilder(
+                  future: _soundContainersFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(
+                        child: Text('No sound containers found.'),
+                      );
+                    }
+                
+                    final soundContainers = snapshot.data!;
+                
+                    _audioPlayersManager.rebuildAudioPlayersMap(soundContainers);
+                
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: _getSections(soundContainers),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _addSoundContainer(),
-        child: Icon(Icons.add),
       ),
     );
   }
@@ -176,7 +164,7 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
                     soundContainerId: soundContainerDetails.soundContainerId!,
                     onEdit: () => setState(() {
                       _loadFutures();
-                    },),
+                    }),
                     soundboardId: widget.soundboardDetails.soundboardId!,
                   ),
                 ),
@@ -223,5 +211,78 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
     final rng = Random();
     final imgId = rng.nextInt(9);
     return AssetImage("assets/images/bg-$imgId.jpg");
+  }
+
+  Map<String, List<SoundContainerDetails>> _getSectionNameToSoundContainersMap(List<SoundContainerDetails> soundContainers) {
+    Map<String, List<SoundContainerDetails>> result = {};
+
+    for (var sc in soundContainers) {
+      result.putIfAbsent(sc.section, () => <SoundContainerDetails>[]).add(sc);
+    }
+
+    return result;
+  }
+
+  Widget _getSectionDivider(String sectionName) {
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: Text(sectionName, style: TextStyle(color: Color(0x99ffffff)),),
+        ),
+        Expanded(child: Padding(
+          padding: const EdgeInsets.only(top: 2.0),
+          child: Divider(color: Color(0x99ffffff),),
+        )),
+      ],
+    );
+  }
+
+  SoundContainerButton _getSoundContainerButton(SoundContainerDetails soundContainerDetails) {
+    return SoundContainerButton(
+      key: Key(soundContainerDetails.name),
+      soundContainerDetails: soundContainerDetails,
+      soundContainerPlayer: _audioPlayersManager
+          .getSoundContainerPlayerForSoundConainer(
+            soundContainerDetails.soundContainerId!,
+          ),
+      onLongPress: () =>
+          _showSoundContainerLongPressDialog(soundContainerDetails),
+      onStartedPlaying: () {
+        _stopPlayersOtherThan(soundContainerDetails);
+      },
+    );
+  }
+
+  List<Widget> _getSections(List<SoundContainerDetails> soundContainers) {
+    List<Widget> result = [];
+
+    for (var nameAndSCList in _getSectionNameToSoundContainersMap(soundContainers).entries) {
+      result.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
+          child: _getSectionDivider(nameAndSCList.key),
+        )
+      );
+
+      List<Widget> stretchWrapChildren = [];
+
+      for (var soundContainerDetails in nameAndSCList.value) {
+        stretchWrapChildren.add(_getSoundContainerButton(soundContainerDetails));
+      }
+
+      result.add(
+        StretchWrap(
+          spacing: 4.0,
+          runSpacing: 0.0,
+          autoStretch: AutoStretch.all,
+          children: stretchWrapChildren,
+        ),
+      );
+    }
+
+    result.add(SizedBox(height: 100, width: 2,));
+
+    return result;
   }
 }

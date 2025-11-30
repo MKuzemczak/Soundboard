@@ -9,6 +9,7 @@ class SoundContainerDetails {
   bool fadeIn;
   bool fadeOut;
   Color? color;
+  String section;
 
   SoundContainerDetails({
     this.soundContainerId,
@@ -19,6 +20,7 @@ class SoundContainerDetails {
     required this.fadeIn,
     required this.fadeOut,
     required this.color,
+    required this.section,
   });
 
   SoundContainerDetails clone() {
@@ -31,6 +33,7 @@ class SoundContainerDetails {
       fadeIn: fadeIn,
       fadeOut: fadeOut,
       color: color,
+      section: section,
     );
   }
 
@@ -42,6 +45,7 @@ class SoundContainerDetails {
       "transitions": (transitions ? "1" : "0"),
       "fadeIn": (fadeIn ? "1" : "0"),
       "fadeOut": (fadeOut ? "1" : "0"),
+      "section": section
     };
     if (soundContainerId != null) {
       map["soundContainerId"] = soundContainerId.toString();
@@ -62,6 +66,7 @@ class SoundContainerDetails {
       fadeIn: map["fadeIn"] == 1,
       fadeOut: map["fadeOut"] == 1,
       color: (map["color"] == null ? null : Color(int.parse(map["color"], radix: 16))),
+      section: map["section"] ?? "",
     );
   }
 
@@ -75,6 +80,7 @@ class SoundContainerDetails {
         "transitions: $transitions, "
         "fadeIn: $fadeIn, "
         "fadeOut: $fadeOut, "
-        "color: $color}";
+        "color: $color, "
+        "section: $section}";
   }
 }
