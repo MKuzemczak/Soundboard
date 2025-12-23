@@ -396,6 +396,7 @@ class _SoundContainerScreenState extends State<SoundContainerScreen> {
           isUpdate: true,
           soundContainerId: soundContainerDetails.soundContainerId!,
           initialName: soundContainerDetails.name,
+          initialSection: soundContainerDetails.section,
         );
       },
     );
