@@ -152,13 +152,14 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'What do you want to do with ${soundContainerDetails.name}?',
-            ),
             if (currentSoundName != null) ...[
               const SizedBox(height: 8),
               Text('Now playing: $currentSoundName'),
             ],
+            Divider(color: Color(0x99ffffff)),
+            Text(
+              'What do you want to do with ${soundContainerDetails.name}?',
+            ),
           ],
         ),
         actions: <Widget>[
