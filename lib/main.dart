@@ -1,8 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:sounboard/screens/soundboard_list_screen.dart';
+import 'package:flutter_background/flutter_background.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {  
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final androidConfig = FlutterBackgroundAndroidConfig(
+    notificationTitle: "Background Task Example",
+    notificationText: "Running in the background",
+    notificationImportance: AndroidNotificationImportance.high,
+    enableWifiLock: true,
+  );
+  
+  bool hasPermissions = await FlutterBackground.initialize(androidConfig: androidConfig);
+  
+  if (hasPermissions) {
+    await FlutterBackground.enableBackgroundExecution();
+    runApp(MyApp());
+  }
 }
 
 class MyApp extends StatelessWidget {
