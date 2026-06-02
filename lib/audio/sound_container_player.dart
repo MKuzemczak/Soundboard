@@ -67,21 +67,29 @@ class SoundContainerPlayer {
     audioPlayerBundle.audioPlayer2.setReleaseMode(ReleaseMode.stop);
     audioPlayerBundle.transitionAudioPlayer.setReleaseMode(ReleaseMode.stop);
 
-    audioPlayerBundle.audioPlayer1.setAudioContext(
-      AudioContext(
-        android: AudioContextAndroid(audioFocus: AndroidAudioFocus.none),
+    // Media-playback audio context. `stayAwake: true` holds a partial wake
+    // lock while playing so the CPU does not sleep while the screen is off.
+    // `usageType: media` + `contentType: music` mark the stream as media so
+    // Android's mediaPlayback foreground service rules apply and the
+    // onPositionChanged / onPlayerComplete callbacks keep firing while the
+    // app is backgrounded.
+    //
+    // `audioFocus: none` is kept on purpose - several players in a single
+    // SoundContainerPlayer are layered (crossfade + transition cymbal) and
+    // requesting focus per-player would make them stomp on each other.
+    final mediaContext = AudioContext(
+      android: AudioContextAndroid(
+        isSpeakerphoneOn: false,
+        stayAwake: true,
+        contentType: AndroidContentType.music,
+        usageType: AndroidUsageType.media,
+        audioFocus: AndroidAudioFocus.none,
       ),
     );
-    audioPlayerBundle.audioPlayer2.setAudioContext(
-      AudioContext(
-        android: AudioContextAndroid(audioFocus: AndroidAudioFocus.none),
-      ),
-    );
-    audioPlayerBundle.transitionAudioPlayer.setAudioContext(
-      AudioContext(
-        android: AudioContextAndroid(audioFocus: AndroidAudioFocus.none),
-      ),
-    );
+
+    audioPlayerBundle.audioPlayer1.setAudioContext(mediaContext);
+    audioPlayerBundle.audioPlayer2.setAudioContext(mediaContext);
+    audioPlayerBundle.transitionAudioPlayer.setAudioContext(mediaContext);
 
     audioPlayerBundle.transitionAudioPlayer.setVolume(0.25);
 

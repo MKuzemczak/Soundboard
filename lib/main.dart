@@ -1,22 +1,52 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sounboard/screens/soundboard_list_screen.dart';
 import 'package:flutter_background/flutter_background.dart';
 
-void main() async {  
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await _enableBackgroundAudio();
+
+  runApp(const MyApp());
+}
+
+/// Starts the flutter_background foreground service so the Flutter isolate
+/// keeps running (and audioplayers' onPlayerComplete callbacks keep firing)
+/// when the user backgrounds the app or turns the screen off.
+///
+/// Failures here must not prevent the app from launching - the app should
+/// still work in the foreground even if the user denied notification or
+/// battery-optimization permissions.
+Future<void> _enableBackgroundAudio() async {
   final androidConfig = FlutterBackgroundAndroidConfig(
-    notificationTitle: "Background Task Example",
-    notificationText: "Running in the background",
-    notificationImportance: AndroidNotificationImportance.high,
+    notificationTitle: "Soundboard",
+    notificationText: "Playing audio in the background",
+    notificationImportance: AndroidNotificationImportance.normal,
     enableWifiLock: true,
   );
-  
-  bool hasPermissions = await FlutterBackground.initialize(androidConfig: androidConfig);
-  
-  if (hasPermissions) {
-    await FlutterBackground.enableBackgroundExecution();
-    runApp(MyApp());
+
+  try {
+    final initialized = await FlutterBackground.initialize(
+      androidConfig: androidConfig,
+    );
+    if (!initialized) {
+      debugPrint(
+        'flutter_background: initialize() returned false - background '
+        'permissions were not granted. Audio will not continue when the app '
+        'is backgrounded.',
+      );
+      return;
+    }
+
+    final enabled = await FlutterBackground.enableBackgroundExecution();
+    if (!enabled) {
+      debugPrint(
+        'flutter_background: enableBackgroundExecution() returned false.',
+      );
+    }
+  } catch (e, st) {
+    debugPrint('flutter_background setup failed: $e\n$st');
   }
 }
 
