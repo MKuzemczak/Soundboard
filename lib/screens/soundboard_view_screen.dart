@@ -139,11 +139,27 @@ class _SoundboardViewScreenState extends State<SoundboardViewScreen> {
   void _showSoundContainerLongPressDialog(
     SoundContainerDetails soundContainerDetails,
   ) {
+    final soundContainerPlayer = _audioPlayersManager
+        .getSoundContainerPlayerForSoundConainer(
+          soundContainerDetails.soundContainerId!,
+        );
+    final currentSoundName = soundContainerPlayer.currentSoundName;
+
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        content: Text(
-          'What do you want to do with ${soundContainerDetails.name}?',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'What do you want to do with ${soundContainerDetails.name}?',
+            ),
+            if (currentSoundName != null) ...[
+              const SizedBox(height: 8),
+              Text('Now playing: $currentSoundName'),
+            ],
+          ],
         ),
         actions: <Widget>[
           TextButton(

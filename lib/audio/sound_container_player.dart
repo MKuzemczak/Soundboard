@@ -126,6 +126,19 @@ class SoundContainerPlayer {
       _audioPlayer2State == PlayerState.playing ||
       _transitionAudioPlayerState == PlayerState.playing;
 
+  String? get currentSoundName {
+    if (!isPlaying) {
+      return null;
+    }
+    if (_currentPlayer == audioPlayerBundle.audioPlayer1) {
+      return _currentAudioPlayer1SoundMapping?.soundDetails.name;
+    }
+    if (_currentPlayer == audioPlayerBundle.audioPlayer2) {
+      return _currentAudioPlayer2SoundMapping?.soundDetails.name;
+    }
+    return null;
+  }
+
   Duration? get _currentPlayerPosition {
     if (_currentPlayer == audioPlayerBundle.audioPlayer1) {
       return _audioPlayer1Position;
