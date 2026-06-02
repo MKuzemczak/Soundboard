@@ -56,6 +56,12 @@ class SoundContainerPlayer {
   bool _nextPlayerStarted = false;
   bool _stopHitBeforePlayersStarted = false;
 
+  // True between a `play()` call and the matching `stop()` call. Used by the
+  // onPlayerComplete fallback to decide whether to auto-advance to the next
+  // sound when a track ends without a crossfade having started (e.g. when the
+  // app is in the background and the crossfade window was missed).
+  bool _playRequested = false;
+
   SoundContainerPlayer({
     required this.soundContainerDetails,
     required this.audioPlayerBundle,
@@ -91,10 +97,28 @@ class SoundContainerPlayer {
     audioPlayerBundle.audioPlayer2.setAudioContext(mediaContext);
     audioPlayerBundle.transitionAudioPlayer.setAudioContext(mediaContext);
 
+    // Drive `onPositionChanged` from a periodic Timer instead of the default
+    // `FramePositionUpdater`. FramePositionUpdater piggy-backs on Flutter's
+    // frame callbacks, which stop firing as soon as the app is backgrounded
+    // and the OS pauses rendering - so position updates (and therefore the
+    // crossfade window in `_handlePositionChange`) silently stop, and the
+    // next sound never starts. A plain `Timer.periodic` keeps firing while
+    // the flutter_background foreground service is alive.
+    _useTimerPositionUpdater(audioPlayerBundle.audioPlayer1);
+    _useTimerPositionUpdater(audioPlayerBundle.audioPlayer2);
+    _useTimerPositionUpdater(audioPlayerBundle.transitionAudioPlayer);
+
     audioPlayerBundle.transitionAudioPlayer.setVolume(0.25);
 
     _initPositions();
     _initStreams();
+  }
+
+  void _useTimerPositionUpdater(AudioPlayer player) {
+    player.positionUpdater = TimerPositionUpdater(
+      interval: const Duration(milliseconds: 200),
+      getPosition: player.getCurrentPosition,
+    );
   }
 
   bool get isPlaying =>
@@ -114,6 +138,7 @@ class SoundContainerPlayer {
 
   Future<void> play() async {
     _stopHitBeforePlayersStarted = false;
+    _playRequested = true;
     final soundSourceWrapper = await _getNextSource();
 
     if (isPlaying || soundSourceWrapper == null) {
@@ -141,6 +166,7 @@ class SoundContainerPlayer {
   void pause() {}
 
   Future<void> stop() async {
+    _playRequested = false;
     if (_currentPlayer != null) {
       await _stopPlayer(_currentPlayer!);
     }
@@ -243,6 +269,31 @@ class SoundContainerPlayer {
         Duration(seconds: (crashDuration.inSeconds / 2).toInt()),
       );
     }
+  }
+
+  /// Safety net for the case where a track ended naturally without a
+  /// crossfade having been started (e.g. the app was backgrounded and the
+  /// position-update timer was throttled enough that the 2-second crossfade
+  /// window in `_handlePositionChange` was missed). If the user hasn't
+  /// stopped the container and no other player picked up playback, we start
+  /// the next sound from scratch on the same player slot so the queue keeps
+  /// advancing instead of going silent.
+  Future<void> _autoAdvanceIfStranded(AudioPlayer completedPlayer) async {
+    if (!_playRequested) {
+      return;
+    }
+    if (isPlaying) {
+      return;
+    }
+
+    final next = await _getNextSource();
+    if (next == null) {
+      _playRequested = false;
+      return;
+    }
+
+    _setCurrentPlayer(completedPlayer);
+    await _startPlayer(completedPlayer, next, 30);
   }
 
   Future<SoundSourceWrapper?> _getNextSource() async {
@@ -389,6 +440,7 @@ class SoundContainerPlayer {
           _audioPlayer1Position = Duration.zero;
           await _handlePositionChange();
           _nextPlayerStarted = false;
+          await _autoAdvanceIfStranded(audioPlayerBundle.audioPlayer1);
           onStateChanged?.call();
         });
 
@@ -416,6 +468,7 @@ class SoundContainerPlayer {
           _audioPlayer2Position = Duration.zero;
           await _handlePositionChange();
           _nextPlayerStarted = false;
+          await _autoAdvanceIfStranded(audioPlayerBundle.audioPlayer2);
           onStateChanged?.call();
         });
 
