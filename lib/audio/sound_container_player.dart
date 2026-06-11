@@ -242,6 +242,8 @@ class SoundContainerPlayer {
       await player.seek(
         Duration(seconds: soundSourceWrapper.soundMappingDetails!.startSeconds),
       );
+    } else {
+      await player.seek(Duration(seconds: 15));
     }
     if (_stopHitBeforePlayersStarted) {
       _stopHitBeforePlayersStarted = false;
